@@ -3,25 +3,27 @@
     <div class="wrapper">
       <toolBar v-model="resolution"></toolBar>
       <div id="draw-block" ref="drawBlock">
-        <canvas id="drawArea" ref="canvas"></canvas>
+        <canvas id="drawArea" ref="canvas" width="200" height="200"></canvas>
       </div>
     </div>
     <trackBlock></trackBlock>
+    <button @click="draw">start</button>
   </div>
 </template>
 
 <script>
 import Layout from "@/layout/index";
-
+import drawTools from "@/utils/draw.js";
 export default {
   name: "",
   data() {
     return {
       resolution: [200, 200],
-      point: [
-        ['100,100','200,100','100,200']
-        ['300,100','400,100','300,200']
-      ]
+      points: [
+        ["0,0", "500,105", "241,312"],
+        ["300,100", "400,100", "300,200"]
+      ],
+      target: 0
     };
   },
   components: {
@@ -29,9 +31,15 @@ export default {
     trackBlock: Layout.trackBlock
   },
   mounted() {},
-  methods: {},
+  methods: {
+    draw: function() {
+      drawTools.draw(this.points[this.target], this.$refs.canvas);
+       drawTools.draw(this.points[1], this.$refs.canvas);
+    }
+  },
   watch: {
     resolution: function(val) {
+      //设置画布分辨率
       let c = this.$refs.canvas;
       let db = this.$refs.drawBlock;
       let maxHeight = db.clientHeight - 15;
@@ -43,10 +51,10 @@ export default {
       if (val[1] * 1 >= maxHeight) {
         this.resolution[1] = maxHeight;
       }
-      let w = this.resolution[0] + "px";
-      let h = this.resolution[1] + "px";
-      c.style.width = w;
-      c.style.height = h;
+      c.style.width = this.resolution[0] + "px";
+      c.style.height = this.resolution[1] + "px";
+      c.width = this.resolution[0];
+      c.height = this.resolution[1];
     }
   }
 };
