@@ -21,6 +21,8 @@ html {
 *:before,
 *:after {
   box-sizing: inherit;
+  margin:0;
+  padding:0;
 }
 
 a:focus,
@@ -38,4 +40,8 @@ a:hover {
 
 div:focus {
   outline: none;
+}
+input{  
+	outline:none;  
+	border:1px solid white;
 }

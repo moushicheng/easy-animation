@@ -1,20 +1,47 @@
 <template>
   <div id="toolBar">
-    <div class="tool-item">pointer</div>
-    <div class="tool-item">pen</div>
-    <div class="tool-item">fill</div>
-    <div class="tool-item">color</div>
     <div class="tool-item">
-      resolution
+      <p>pointer</p>
+      <i class="fa fa-mouse-pointer" aria-hidden="true"></i>
+    </div>
+    <div class="tool-item">
+      <p>pen</p>
+      <i class="fa fa-pencil" aria-hidden="true"></i>
+    </div>
+    <div class="tool-item">
+      <p>fill</p>
+      <i class="fa fa-circle" aria-hidden="true"></i>
+    </div>
+    <div class="tool-item">
+      <p>color</p>
+      <i class="fa fa-braille" aria-hidden="true"></i>
+    </div>
+    <div class="tool-item">
+      <p>showAll</p>
+    </div>
+    <div class="tool-item">
+      <p>hideAnother</p>
+    </div>
+    <div class="tool-item">
+      <p>insert</p>
+      <i class="fa fa-file-image-o" aria-hidden="true"></i>
+    </div>
+    <div class="tool-item">
+      <p>preview</p>
+      <i class="fa fa-desktop" aria-hidden="true"></i>
+    </div>
+    <div class="tool-item">
+      <p>import</p>
+      <i class="fa fa-download" aria-hidden="true"></i>
+    </div>
+    <div class="tool-item " id="resolution">
+      <p>resolution</p>
       <div id="resolutionBlock">
         <input type="text" v-model="resolution[0]" />
         x
         <input type="text" v-model="resolution[1]" />
       </div>
     </div>
-    <div class="tool-item">insert</div>
-    <div class="tool-item">preview</div>
-    <div class="tool-item">import</div>
   </div>
 </template>
 
@@ -22,13 +49,18 @@
 export default {
   name: "toolBar",
   data() {
-    return {
-    };
+    return {};
   },
   components: {},
   mounted() {},
   methods: {},
-  props:['resolution']
+  model: {
+    prop: "resolution",
+    event: "change"
+  },
+  props: {
+    resolution: Array
+  }
 };
 </script>
 
@@ -40,11 +72,17 @@ export default {
   .tool-item {
     cursor: pointer;
     margin-top: 1rem;
+    display: flex;
+    justify-content: space-between;
   }
-  #resolutionBlock {
-    width: fit-content;
-    input {
-      width: 3rem;
+  #resolution {
+    flex-direction: column;
+    #resolutionBlock {
+      width: fit-content;
+      input {
+        border-radius: 5px;
+        width: 3rem;
+      }
     }
   }
 }
