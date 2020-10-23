@@ -7,7 +7,7 @@
       </div>
     </div>
     <trackBlock></trackBlock>
-    <button @click="draw">start</button>
+    <!-- <button @click="draw">start</button> -->
   </div>
 </template>
 
@@ -20,8 +20,11 @@ export default {
     return {
       resolution: [200, 200],
       points: [
-        ["0,0", "500,105", "241,312"],
-        ["300,100", "400,100", "300,200"]
+        {
+          order:0,
+          time: 0,
+          data: ["0,0", "500,105", "241,312"]
+        }
       ],
       target: 0
     };
@@ -33,8 +36,7 @@ export default {
   mounted() {},
   methods: {
     draw: function() {
-      drawTools.draw(this.points[this.target], this.$refs.canvas);
-       drawTools.draw(this.points[1], this.$refs.canvas);
+      drawTools.draw(this.points[this.target].data, this.$refs.canvas);
     }
   },
   watch: {
