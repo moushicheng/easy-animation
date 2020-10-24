@@ -16,4 +16,4 @@ npm run serve
 
 演示：
 
-![image](https://github.com/a1163675107/front_animate/tree/dev/src/assets/pop.gif)
+![image](/src/assets/pop.gif)
