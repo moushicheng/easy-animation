@@ -5,4 +5,5 @@
 </template>
 
 <style lang="scss" scope>
+@import "@/styles/index.scss";
 </style>
