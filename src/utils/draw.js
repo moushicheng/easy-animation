@@ -11,4 +11,4 @@ function draw(data, dom) {
   ctx.lineTo(beginPoint[0],beginPoint[1]);
   ctx.stroke();
 }
-export default {draw}
+export default draw

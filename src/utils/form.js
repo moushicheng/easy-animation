@@ -7,7 +7,7 @@ let rules = {
   },
 };
 
-export default function timeValid(data, strategy, range,callback) {
+function  verify(data, strategy, range,callback) {
   let min,max;
   if (range) {
     range = range.split(",");
@@ -20,3 +20,4 @@ export default function timeValid(data, strategy, range,callback) {
   if(result==false)callback(message);
   return result;
 }
+export {verify}

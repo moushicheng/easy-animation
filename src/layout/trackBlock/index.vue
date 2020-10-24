@@ -3,26 +3,22 @@
     <hr />
     <div id="timeLine">
       <p>TimeLine</p>
-      <div id="timeContainer">
-        <div class="time-item">00:00.000"</div>
-        <div class="time-item">00:00.500"</div>
-        <div class="time-item">00:01.000"</div>
-        <div class="time-item">00:01.500"</div>
-        <div class="time-item">00:02.000"</div>
-        <div class="time-item">00:02.500"</div>
+      <div id="timeContainer" ref="timeContainer" >
+        <div class="time-item" ref="timeItem">{{timeLineData[0]}}</div>
+        <div class="time-item">{{timeLineData[1]}}</div>
+        <div class="time-item">{{timeLineData[2]}}</div>
+        <div class="time-item">{{timeLineData[3]}}</div>
+        <div class="time-item">{{timeLineData[4]}}</div>
+        <div class="time-item">{{timeLineData[5]}}</div>
       </div>
     </div>
     <div id="frameTrack">
-      <div
-        class="frame"
-        v-for="item in timeData"
-        :key="item.index"
-        :time="item.time"
-      >
-        {{ item.order }}
+      <div id="frameContaner">
+        <frame  v-for="item in timeData" :key="item.index" :content="item.order" :popContent=" formatTime(item.time)" class="frame" ref="frame">
       </div>
       <div id="plusBtn" @click="addFrame">+</div>
     </div>
+
     <el-dialog title="[ADD]new frame" :visible.sync="dialogVisible" width="30%">
       <form ref="addForm" id="addForm">
         <div class="form-item">
@@ -38,12 +34,17 @@
         <el-button type="primary" @click="submitForm">confirm</el-button>
         <el-button @click="dialogVisible = false">cancel</el-button>
       </span>
+
     </el-dialog>
+
   </div>
 </template>
 
 <script>
-import verify from "@/utils/rules.js";
+import {verify} from "@/utils/form.js";
+import {formatTime} from "@/utils/index.js"
+import frame from "@/components/frame/index"
+
 export default {
   name: "trackBlock",
   data() {
@@ -52,16 +53,41 @@ export default {
         {
           order: 0,
           time: new Date(0)
-        }
+        },
       ],
       dialogVisible: false,
-      maxTime: new Date(2500)
+      maxTime: new Date(2500),
+      timeLineData:['00:00.000"','00:00.500"','00:01.000"','00:01.500"','00:02.000"','00:02.500"']
     };
   },
-  components: {},
+  components: {frame},
   mounted() {},
-  computed: {
-    timeLineData: function() {}
+  watch:{
+    timeData:{
+      handler:function(){
+        setTimeout(()=>{
+        this.reDrawTrack();
+        let frames=this.$refs.frame;
+        let timeContainer=this.$refs.timeContainer;
+        let tcWidth=timeContainer.clientWidth;
+        let b=this.$refs.timeItem.clientWidth;
+
+
+         for (const index in frames) {
+          const frame=frames[index].$el;
+          const data=this.timeData[index];
+
+          let ratio=((data.time*1)/(this.maxTime*1));
+          let offset=-b*ratio+'px';
+          ratio=ratio*100+"%";
+
+          frame.style.setProperty('--x',ratio);
+          frame.style.setProperty('--y',offset);
+         }
+        })
+      },
+      deep:true
+    }
   },
 
   methods: {
@@ -72,11 +98,11 @@ export default {
       this.dialogVisible = false;
       let form = this.$refs["addForm"];
       let min = form.timeMinute.value || 0;
-      if(!verify(min, "range", "0,60",this.onVerifyErrot))return;
+      if (!verify(min, "range", "0,60", this.onVerifyErrot)) return;
       let second = form.timeSecond.value || 0;
-      if(!verify(second, "range", "0,60",this.onVerifyErrot))return;
+      if (!verify(second, "range", "0,60", this.onVerifyErrot)) return;
       let ms = form.timemillisecond.value || 0;
-      if(!verify(ms, "range", "0,1000",this.onVerifyErrot))return;
+      if (!verify(ms, "range", "0,1000", this.onVerifyErrot)) return;
 
       let allTime = new Date(min * 60 * 1000 + second * 1000 + ms * 1);
       this.timeData.push({
@@ -87,9 +113,21 @@ export default {
         this.maxTime = allTime;
       }
     },
-    onVerifyErrot:function(message){
-        this.$message({message, type: 'warning'});
+    onVerifyErrot: function(message) {
+      this.$message({ message, type: "warning" });
     },
+    reDrawTrack:function(){
+     let maxT=this.maxTime;
+     let t=this.maxTime/5;
+     let result=['00:00.000"'];
+     for(let i=1;i<5;i++){
+        result.push(this.formatTime( new Date(t*i) ));
+     }
+     result.push(this.formatTime(maxT));
+     this.timeLineData=result;
+     this.timeLineData.push(); //强制更新
+    },
+   formatTime
   }
 };
 </script>
@@ -115,17 +153,31 @@ export default {
     margin-left: 6rem;
     margin-top: 0.5rem;
     display: flex;
-    .frame {
-      cursor: pointer;
-      width: 2rem;
-      border-radius: 1rem;
-      color: rgb(58, 13, 13);
-      background: rgb(250, 249, 249);
-      text-align: center;
+    align-items:center;
+    #frameContaner {
+       height:1rem;
+       border-top:1px solid rgba(255, 255, 255,0.5);
+       border-bottom:1px solid rgba(255, 255, 255,0.5);
+       flex-grow: 1;
+       position: relative;
+      .frame {
+         --x:'0%';
+         --y:'0px';
+         position: absolute;
+         top:0;
+         left:var(--x);
+         transform: translateX(var(--y));
+      }
     }
     #plusBtn {
+      font-size:1rem;
+      font-weight: 900;
+      color: white;
       cursor: pointer;
-      margin-left: 0.5rem;
+      border-radius: 50%;
+      &:hover{
+        color:#289baf
+      }
     }
   }
 }
