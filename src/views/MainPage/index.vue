@@ -6,7 +6,7 @@
         <canvas id="drawArea" ref="canvas" width="200" height="200"></canvas>
       </div>
     </div>
-    <trackBlock></trackBlock>
+    <trackBlock @frame="frameDelivery" @target="choiceTarget"></trackBlock>
     <!-- <button @click="draw">start</button> -->
   </div>
 </template>
@@ -37,6 +37,17 @@ export default {
   methods: {
     draw: function() {
       drawTools.draw(this.points[this.target].data, this.$refs.canvas);
+    },
+    frameDelivery:function(m){
+        this.points.push({
+          order:this.points.length,
+          time:m,
+          data:[]
+        })
+    },
+    choiceTarget:function(m){
+      console.log(m);
+      this.target=m;
     }
   },
   watch: {

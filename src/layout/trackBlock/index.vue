@@ -14,7 +14,7 @@
     </div>
     <div id="frameTrack">
       <div id="frameContaner">
-        <frame  v-for="item in timeData" :key="item.index" :content="item.order" :popContent=" formatTime(item.time)" class="frame" ref="frame">
+        <frame  v-for="item in timeData" :key="item.index" :content="item.order" :popContent=" formatTime(item.time)" class="frame" ref="frame" @click="$emit('target',item.order);">
       </div>
       <div id="plusBtn" @click="addFrame">+</div>
     </div>
@@ -112,6 +112,8 @@ export default {
       if (this.maxTime <= allTime) {
         this.maxTime = allTime;
       }
+      this.$emit('frame',allTime.valueOf());
+
     },
     onVerifyErrot: function(message) {
       this.$message({ message, type: "warning" });
