@@ -30,7 +30,7 @@
       <p>preview</p>
       <i class="fa fa-desktop" aria-hidden="true"></i>
     </div>
-    <div class="tool-item">
+    <div class="tool-item" @click="importCode">
       <p>import</p>
       <i class="fa fa-download" aria-hidden="true"></i>
     </div>
@@ -53,7 +53,11 @@ export default {
   },
   components: {},
   mounted() {},
-  methods: {},
+  methods: {
+    importCode:function(){
+      this.$emit('importCode')
+    }
+  },
   model: {
     prop: "resolution",
     event: "change"

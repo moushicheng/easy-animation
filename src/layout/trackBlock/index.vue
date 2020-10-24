@@ -107,15 +107,15 @@ export default {
       let allTime = new Date(min * 60 * 1000 + second * 1000 + ms * 1);
       this.timeData.push({
         order: this.timeData.length,
-        time: allTime
+        time: allTime,
       });
       if (this.maxTime <= allTime) {
         this.maxTime = allTime;
       }
-      this.$emit('frame',allTime.valueOf());
+      this.$emit('frame',allTime.valueOf()); //传递新帧给主页面
 
     },
-    onVerifyErrot: function(message) {
+    onVerifyErrot: function(message) { //检测表单
       this.$message({ message, type: "warning" });
     },
     reDrawTrack:function(){
