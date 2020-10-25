@@ -17,8 +17,11 @@ npm run serve
 演示：
 
 ![image](/src/assets/pop.gif)
+<<<<<<< HEAD
 
 
 
 # How to use it?
 
+=======
+>>>>>>> d2b3b74ff3c3ac9942b82c01a7628655a3c71d44
