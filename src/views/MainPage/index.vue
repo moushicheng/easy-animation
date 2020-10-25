@@ -6,7 +6,7 @@
         <canvas id="drawArea" ref="canvas" width="200" height="200"></canvas>
       </div>
     </div>
-    <trackBlock @frame="frameDelivery" @target="choiceTarget"></trackBlock>
+    <trackBlock @frameDelivery="frameDelivery" @choiceTarget="choiceTarget" @changeFrame="changeFrame"></trackBlock>
   </div>
 </template>
 
@@ -78,16 +78,17 @@ export default {
     choiceTarget: function(m) {
       this.target = m;
     },
+    changeFrame:function(item){
+     this.points[item.order].time=item.time;
+    },
     //导出代码
     importCode: function() {
-      //得到clip-path：polyge(内部内容)
       this.points=pointShake(this.points);
       let code=CreateImportCode({
         points:this.points,
         viewX:this.resolution[0],
         viewY:this.resolution[1]
       })
-
     }
   },
   watch: {

@@ -1,6 +1,7 @@
 <template>
   <div id="trackBlock">
     <hr />
+
     <div id="timeLine">
       <p>TimeLine</p>
       <div id="timeContainer" ref="timeContainer" >
@@ -13,8 +14,18 @@
       </div>
     </div>
     <div id="frameTrack">
-      <div id="frameContaner">
-        <frame  v-for="item in timeData" :key="item.index" :content="item.order" :popContent=" formatTime(item.time)" class="frame" ref="frame" @click="$emit('target',item.order);">
+      <p id="frameTarget">cur:{{target}}</p>
+      <div id="frameContainer" ref='frameContainer'>
+        <frame
+        v-for="item in timeData"
+        :key="item.index"
+        :content="item.order"
+        :popContent=" formatTime(item.time)"
+        class="frame"
+        ref="frame"
+        @click="$emit('choiceTarget',item.order);target=item.order"
+        @contextmenu.prevent.native="changeForm(item)"
+        >
       </div>
       <div id="plusBtn" @click="addFrame">+</div>
     </div>
@@ -23,11 +34,11 @@
       <form ref="addForm" id="addForm">
         <div class="form-item">
           <p class="form-item-head">Set Time</p>
-          <input type="number" max="60" min="0" name="timeMinute" />
+          <input type="number" max="60" min="0" v-model="formData.minute" />
           <span id="timeMiddle">:</span>
-          <input type="number" max="60" min="0" name="timeSecond" />
+          <input type="number" max="60" min="0" v-model="formData.second" />
           <span id="timeMiddle">.</span>
-          <input type="number" max="1000" min="0" name="timemillisecond" />
+          <input type="number" max="1000" min="0" v-model="formData.millisecond" />
         </div>
       </form>
       <span slot="footer" class="dialog-footer">
@@ -55,30 +66,40 @@ export default {
           time: new Date(0)
         },
       ],
+      formData:{
+        minute:0,
+        second:0,
+        millisecond:0,
+        type:null,
+      },
       dialogVisible: false,
       maxTime: new Date(2500),
-      timeLineData:['00:00.000"','00:00.500"','00:01.000"','00:01.500"','00:02.000"','00:02.500"']
+      timeLineData:['00:00.000"','00:00.500"','00:01.000"','00:01.500"','00:02.000"','00:02.500"'],
+      target:0,
     };
   },
   components: {frame},
-  mounted() {},
+  mounted() {
+     let frame=this.$refs.frameContainer
+  },
   watch:{
     timeData:{
-      handler:function(){
+      handler:function(){ //使帧对其时间轨,根据f(时间/总时间) -> f(位置)
         setTimeout(()=>{
+        //重绘时间轨
         this.reDrawTrack();
+        //对其帧位置
         let frames=this.$refs.frame;
         let timeContainer=this.$refs.timeContainer;
         let tcWidth=timeContainer.clientWidth;
         let b=this.$refs.timeItem.clientWidth;
 
-
          for (const index in frames) {
           const frame=frames[index].$el;
           const data=this.timeData[index];
 
-          let ratio=((data.time*1)/(this.maxTime*1));
-          let offset=-b*ratio+'px';
+          let ratio=((data.time*1)/(this.maxTime*1)); //粗调
+          let offset=-b*ratio+'px'; //细调,消除偏移量
           ratio=ratio*100+"%";
 
           frame.style.setProperty('--x',ratio);
@@ -91,29 +112,36 @@ export default {
   },
 
   methods: {
-    addFrame: function(done) {
+    addFrame: function(done) { //添加新帧
+      this.formData.type='add';
       this.dialogVisible = true;
     },
+    //表单提交
     submitForm: function() {
       this.dialogVisible = false;
-      let form = this.$refs["addForm"];
-      let min = form.timeMinute.value || 0;
-      if (!verify(min, "range", "0,60", this.onVerifyErrot)) return;
-      let second = form.timeSecond.value || 0;
-      if (!verify(second, "range", "0,60", this.onVerifyErrot)) return;
-      let ms = form.timemillisecond.value || 0;
-      if (!verify(ms, "range", "0,1000", this.onVerifyErrot)) return;
-
+      let min = this.formData.minute
+      let second = this.formData.second
+      let ms = this.formData.millisecond
+      if (!verify(min, "range", "0,60", this.onVerifyErrot)||!verify(second, "range", "0,60", this.onVerifyErrot)||!verify(ms, "range", "0,1000", this.onVerifyErrot)) return;
       let allTime = new Date(min * 60 * 1000 + second * 1000 + ms * 1);
-      this.timeData.push({
-        order: this.timeData.length,
-        time: allTime,
-      });
+      if(this.formData.type=='add'){
+        this.timeData.push({
+          order: this.timeData.length,
+          time: allTime,
+        });
+        //传递新帧给主页面
+        this.$emit('frameDelivery',allTime.valueOf());
+        this.$emit('choiceTarget',this.timeData.length-1);
+      this.target=this.timeData.length-1;
+
+      }else if(this.formData.type=='change'){
+        this.timeData[this.target].time=allTime;
+        this.$emit('changeFrame',{order:this.target,time:allTime});
+        this.$emit('choiceTarget',this.target);
+      }
       if (this.maxTime <= allTime) {
         this.maxTime = allTime;
       }
-      this.$emit('frame',allTime.valueOf()); //传递新帧给主页面
-
     },
     onVerifyErrot: function(message) { //检测表单
       this.$message({ message, type: "warning" });
@@ -129,7 +157,16 @@ export default {
      this.timeLineData=result;
      this.timeLineData.push(); //强制更新
     },
-   formatTime
+    changeForm:function(item){
+     this.dialogVisible = true;
+     this.target=item.order;
+     this.formData.type='change';
+     let time=item.time;
+      this.formData.minute = time.getMinutes();
+      this.formData.second= time.getSeconds();
+      this.formData.millisecond= time.getMilliseconds();
+    },
+    formatTime
   }
 };
 </script>
@@ -152,11 +189,14 @@ export default {
     }
   }
   #frameTrack {
-    margin-left: 6rem;
+    #frameTarget{
+      margin-left:2rem;
+      width:4rem;
+    }
     margin-top: 0.5rem;
     display: flex;
     align-items:center;
-    #frameContaner {
+    #frameContainer {
        height:1rem;
        border-top:1px solid rgba(255, 255, 255,0.5);
        border-bottom:1px solid rgba(255, 255, 255,0.5);
