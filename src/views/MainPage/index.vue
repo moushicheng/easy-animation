@@ -43,12 +43,16 @@ export default {
     let originX = null;
     let originY = null;
     c.addEventListener("click", function(e) { //绘画函数
-      if (self.points[self.target].finish == true) return;
-      let command = null;
+      if (self.points[self.target].finish == true) return; //如果完成了则直接结束
+      let command = null; //设置绘画命令
+      //获取鼠标坐标点
       let x = e.offsetX;
       let y = e.offsetY;
+
       let target = self.target;
-      self.points[target].data.push(x + "," + y);
+
+      self.points[target].data.push(x + "," + y); //记录点坐标
+
       if (self.points[target].data.length == 1) { //起始点命令
         command = "initial";
         originX = x;
@@ -56,7 +60,7 @@ export default {
       } else if (Math.abs(originX - x) < 4 && Math.abs(originY - y) < 4) { //如果点到起始点，则闭合图形
         command = "close";
       }
-      self.draw(command);
+      self.draw(command); //开始绘制
       if (command == "close") { //最后一个点实际上是"废"的,因为clip-path会自动闭合
         self.points[self.target].data.pop();
         self.points[self.target].finish = true;

@@ -23,8 +23,9 @@
         :popContent=" formatTime(item.time)"
         class="frame"
         ref="frame"
-        @click="$emit('choiceTarget',item.order);target=item.order"
-        @contextmenu.prevent.native="changeForm(item)"
+        @click="onFrameClick(item.order)"
+        @delete='deleteData(item.order)'
+        @adjust='adjustData(item)'
         >
       </div>
       <div id="plusBtn" @click="addFrame">+</div>
@@ -146,7 +147,7 @@ export default {
     onVerifyErrot: function(message) { //检测表单
       this.$message({ message, type: "warning" });
     },
-    reDrawTrack:function(){
+    reDrawTrack:function(){ //重绘轨道时间轴
      let maxT=this.maxTime;
      let t=this.maxTime/5;
      let result=['00:00.000"'];
@@ -157,7 +158,7 @@ export default {
      this.timeLineData=result;
      this.timeLineData.push(); //强制更新
     },
-    changeForm:function(item){
+    adjustData:function(item){ //重设单独帧的数据
      this.dialogVisible = true;
      this.target=item.order;
      this.formData.type='change';
@@ -166,7 +167,21 @@ export default {
       this.formData.second= time.getSeconds();
       this.formData.millisecond= time.getMilliseconds();
     },
-    formatTime
+    deleteData:function(order){
+      this.timeData.splice(order, 1);
+      this.reDrawFrame();
+    },
+    onFrameClick:function(order){
+      this.$emit('choiceTarget',order);
+      this.target=order;
+    },
+    reDrawFrame:function(){
+      let count=0;
+      for (const item of this.timeData) {
+        item.order=count++;
+      }
+    },
+    formatTime //格式化时间
   }
 };
 </script>
