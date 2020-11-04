@@ -10,7 +10,7 @@
         <div class="time-item">{{timeLineData[2]}}</div>
         <div class="time-item">{{timeLineData[3]}}</div>
         <div class="time-item">{{timeLineData[4]}}</div>
-        <div class="time-item">{{timeLineData[5]}}</div>
+        <div class="time-item" @click="adjustMaxTime" >{{timeLineData[5]}}</div>
       </div>
     </div>
     <div id="frameTrack">
@@ -46,7 +46,6 @@
         <el-button type="primary" @click="submitForm">confirm</el-button>
         <el-button @click="dialogVisible = false">cancel</el-button>
       </span>
-
     </el-dialog>
 
   </div>
@@ -81,7 +80,6 @@ export default {
   },
   components: {frame},
   mounted() {
-     let frame=this.$refs.frameContainer
   },
   watch:{
     timeData:{
@@ -102,7 +100,6 @@ export default {
           let ratio=((data.time*1)/(this.maxTime*1)); //粗调
           let offset=-b*ratio+'px'; //细调,消除偏移量
           ratio=ratio*100+"%";
-
           frame.style.setProperty('--x',ratio);
           frame.style.setProperty('--y',offset);
          }
@@ -139,6 +136,9 @@ export default {
         this.timeData[this.target].time=allTime;
         this.$emit('changeFrame',{order:this.target,time:allTime});
         this.$emit('choiceTarget',this.target);
+      }else if(this.formData.type=='changeMaxTime'){
+        this.maxTime=allTime;
+        this.reDrawTrack();
       }
       if (this.maxTime <= allTime) {
         this.maxTime = allTime;
@@ -181,6 +181,10 @@ export default {
         item.order=count++;
       }
     },
+    adjustMaxTime:function(){
+      this.formData.type='changeMaxTime';
+      this.dialogVisible = true;
+    },
     formatTime //格式化时间
   }
 };
@@ -201,6 +205,18 @@ export default {
       display: flex;
       justify-content: space-between;
       margin: 0 1rem;
+      margin-top:5px;
+      .time-item:nth-child(6){
+        cursor: pointer;
+        background:white;
+        color:rgb(52, 73, 94);
+        border-radius: 5px;
+        padding:1px 5px;
+      }
+      .time-item:nth-child(6):hover{
+          background:rgb(33, 47, 58);
+        color:white;
+      }
     }
   }
   #frameTrack {

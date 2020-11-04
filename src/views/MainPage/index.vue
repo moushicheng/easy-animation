@@ -1,19 +1,27 @@
 <template>
   <div id="main-page">
     <div class="wrapper">
-      <toolBar v-model="resolution" @importCode="importCode"></toolBar>
+      <toolBar
+        v-model="resolution"
+        @importCode="importCode"
+        @insert="insert"
+      ></toolBar>
       <div id="draw-block" ref="drawBlock">
         <canvas id="drawArea" ref="canvas" width="200" height="200"></canvas>
       </div>
     </div>
-    <trackBlock @frameDelivery="frameDelivery" @choiceTarget="choiceTarget" @changeFrame="changeFrame"></trackBlock>
+    <trackBlock
+      @frameDelivery="frameDelivery"
+      @choiceTarget="choiceTarget"
+      @changeFrame="changeFrame"
+    ></trackBlock>
   </div>
 </template>
 
 <script>
 import Layout from "@/layout/index";
 import drawTools from "@/utils/draw.js";
-import {CreateImportCode,pointShake} from "@/utils/index.js"
+import { CreateImportCode, pointShake } from "@/utils/index.js";
 
 export default {
   name: "",
@@ -21,15 +29,14 @@ export default {
     return {
       resolution: [200, 200],
       points: [
-          {
-          order: 0,
-          time: new Date(0),
-          data: [
-          ],
-          finish: false
-        },
-      
+        {
+          order: 0,
+          time: new Date(0),
+          data: [],
+          finish: false
+        }
       ],
+      image: null,
       target: 0
     };
   },
@@ -38,61 +45,83 @@ export default {
     trackBlock: Layout.trackBlock
   },
   mounted() {
-    let c = this.$refs.canvas;
+    let c = this.$refs.drawBlock;
     let self = this;
     let originX = null;
     let originY = null;
-    c.addEventListener("click", function(e) { //绘画函数
-      if (self.points[self.target].finish == true) return; //如果完成了则直接结束
-      let command = null; //设置绘画命令
-      //获取鼠标坐标点
-      let x = e.offsetX;
-      let y = e.offsetY;
+    c.addEventListener(
+      "click",
+      function(e) {
+        //绘画函数
+        if (self.points[self.target].finish == true) return; //如果完成了则直接结束
+        let command = null; //设置绘画命令
+        //获取鼠标坐标点
+        let x = e.offsetX;
+        let y = e.offsetY;
+        let target = self.target;
 
-      let target = self.target;
+        self.points[target].data.push(x + "," + y); //记录点坐标
 
-      self.points[target].data.push(x + "," + y); //记录点坐标
-
-      if (self.points[target].data.length == 1) { //起始点命令
-        command = "initial";
-        originX = x;
-        originY = y;
-      } else if (Math.abs(originX - x) < 4 && Math.abs(originY - y) < 4) { //如果点到起始点，则闭合图形
-        command = "close";
-      }
-      self.draw(command); //开始绘制
-      if (command == "close") { //最后一个点实际上是"废"的,因为clip-path会自动闭合
-        self.points[self.target].data.pop();
-        self.points[self.target].finish = true;
-      }
-    });
+        if (self.points[target].data.length == 1) {
+          //起始点命令
+          command = "initial";
+          originX = x;
+          originY = y;
+        } else if (Math.abs(originX - x) < 6 && Math.abs(originY - y) < 6) {
+          //如果点到起始点，则闭合图形
+          command = "close";
+        }
+        self.draw(command); //开始绘制
+        if (command == "close") {
+          self.points[self.target].finish = true;
+        }
+      },
+      true
+    );
   },
   methods: {
     draw: function(command) {
-      drawTools.draw(this.points[this.target].data, this.$refs.canvas, command);
+      drawTools.draw(this.points,this.target, this.$refs.canvas, command);
     },
     frameDelivery: function(m) {
       this.points.push({
         order: this.points.length,
         time: m,
         data: [],
-        finish:false,
+        finish: false
       });
     },
     choiceTarget: function(m) {
       this.target = m;
     },
-    changeFrame:function(item){
-     this.points[item.order].time=item.time;
+    changeFrame: function(item) {
+      this.points[item.order].time = item.time;
     },
     //导出代码
     importCode: function() {
-      this.points=pointShake(this.points);
-      let code=CreateImportCode({
-        points:this.points,
-        viewX:this.resolution[0],
-        viewY:this.resolution[1]
-      })
+      for (const item of this.points) { //去除最后一个点，因为它实际上是废的
+        item.data.pop();
+      }
+      this.points = pointShake(this.points);
+      let code = CreateImportCode({
+        points: this.points,
+        viewX: this.resolution[0],
+        viewY: this.resolution[1]
+      });
+    },
+    insert: function() {
+      let canvas = this.$refs.canvas;
+      let context = canvas.getContext("2d");
+      if (this.image == null) {
+        let img = new Image();
+        img.src = require("@/assets/logo.png");
+        this.image = img;
+        img.onload = function() {
+          context.drawImage(this, 0, 0);
+        };
+      } else {
+      context.drawImage(this.image,0,0,300,300,100,100,300,300);
+      }
     }
   },
   watch: {
@@ -113,6 +142,8 @@ export default {
       c.style.height = this.resolution[1] + "px";
       c.width = this.resolution[0];
       c.height = this.resolution[1];
+      //重绘原来画好的图案
+      this.draw();
     }
   }
 };
@@ -126,7 +157,7 @@ export default {
     display: flex;
     #draw-block {
       flex-grow: 1;
-      height: 50rem;
+      height: 80vh;
       border: 1px solid white;
       display: flex;
       justify-content: center;
@@ -135,6 +166,8 @@ export default {
         width: 200px;
         height: 200px;
         border: 1px solid rgb(139, 139, 139);
+        background: rgba(0, 0, 0, 0);
+        position: absolute;
       }
     }
   }

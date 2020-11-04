@@ -22,7 +22,7 @@
     <div class="tool-item">
       <p>hideAnother</p>
     </div>
-    <div class="tool-item">
+    <div class="tool-item" @click='insertImage'>
       <p>insert</p>
       <i class="fa fa-file-image-o" aria-hidden="true"></i>
     </div>
@@ -56,6 +56,9 @@ export default {
   methods: {
     importCode:function(){
       this.$emit('importCode')
+    },
+    insertImage:function(){
+      this.$emit('insert')
     }
   },
   model: {

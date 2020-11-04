@@ -95,7 +95,7 @@ function pointShake(points){
       let result=null;
       let t=i+insertNum*i;
        if(endNum>0&&i==interval-1){
-         result=countNewPoint(data[t],data[t+1],insertNum+endNum);  
+         result=countNewPoint(data[t],data[t+1],insertNum+endNum);
        }else{
          result=countNewPoint(data[t],data[t+1],insertNum);
        }
@@ -110,11 +110,9 @@ function countNewPoint(point1,point2,amount){ //amount就是点插入数目
    let y1=point1.split(',')[1];
    let x2=point2.split(',')[0];
    let y2=point2.split(',')[1];
-   console.log(point1);
-   console.log(point2);
    let offsetX=(x2-x1)/(amount+2);
    let offsetY=(y2-y1)/(amount+2);
- 
+
    let result=[];
    for (let i=1;i<=amount;i++) {
      result.push(`${x1*1+offsetX*i},${y1*1+offsetY*i}`)
