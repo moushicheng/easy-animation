@@ -214,8 +214,8 @@ export default {
         padding:1px 5px;
       }
       .time-item:nth-child(6):hover{
-          background:rgb(33, 47, 58);
-        color:white;
+         color:rgb(52, 73, 94);
+         background: rgba(255, 255, 255, 0.8);
       }
     }
   }

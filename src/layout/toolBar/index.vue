@@ -16,6 +16,21 @@
       <p>color</p>
       <i class="fa fa-braille" aria-hidden="true"></i>
     </div>
+    <div class="tool-item" id="layer" @click="openLayout">
+      <p>layer</p>
+      <i class="fa fa-arrow-right" aria-hidden="true"></i>
+      <div class="switch-box" v-if="layerShow">
+        <header>Switch A Layer</header>
+        <div class="switch-item" @click="choiceLayout('draw')">
+          <p>draw</p>
+          <i class="fa fa-check" aria-hidden="true" v-if="layer=='draw'"></i>
+        </div>
+        <div class="switch-item" @click="choiceLayout('image')">
+          <p>image</p>
+           <i class="fa fa-check" aria-hidden="true" v-if="layer=='image'"></i>
+        </div>
+      </div>
+    </div>
     <div class="tool-item">
       <p>showAll</p>
     </div>
@@ -49,16 +64,26 @@
 export default {
   name: "toolBar",
   data() {
-    return {};
+    return {
+      layerShow:false,
+      layer:'draw'
+    };
   },
   components: {},
   mounted() {},
   methods: {
     importCode:function(){
-      this.$emit('importCode')
+      this.$emit('events','importCode')
     },
     insertImage:function(){
-      this.$emit('insert')
+      this.$emit('events','insert')
+    },
+    openLayout:function(){
+      this.layerShow=!this.layerShow
+    },
+    choiceLayout:function(name){
+      this.layer=name;
+       this.$emit('events','choiceLayout',name)
     }
   },
   model: {
@@ -81,6 +106,11 @@ export default {
     margin-top: 1rem;
     display: flex;
     justify-content: space-between;
+            transition:0.05s;
+  }
+  .tool-item:hover{
+        font-size:1.25rem;
+        color:rgb(159, 208, 212)
   }
   #resolution {
     flex-direction: column;
@@ -89,6 +119,39 @@ export default {
       input {
         border-radius: 5px;
         width: 3rem;
+      }
+    }
+  }
+  #layer{
+    position: relative;
+    .switch-box{
+      width:fit-content;
+      position: absolute;
+      padding:0.3rem;
+      z-index:10;
+      left:100%;
+      color:rgb(52, 73, 94);
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 10px;
+      margin-left:0.3rem;
+      font-size: 1rem;
+      header{
+        cursor:auto;
+        font-weight: 300;
+        font-size:1.5rem;
+      }
+      .switch-item{
+        margin: 0.5rem 0;
+        transition: 0.05s;
+        display: flex;
+        justify-content: space-between;
+      }
+      .switch-item:hover{
+        font-size:1.25rem;
+        color:rgb(85, 111, 138)
+      }
+      .switch-item:nth-last-child(n+1){
+        border-bottom: 1px solid black;
       }
     }
   }

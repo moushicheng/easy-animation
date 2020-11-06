@@ -3,11 +3,11 @@
     <div class="wrapper">
       <toolBar
         v-model="resolution"
-        @importCode="importCode"
-        @insert="insert"
+        @events="toolEvent"
       ></toolBar>
       <div id="draw-block" ref="drawBlock">
         <canvas id="drawArea" ref="canvas" width="200" height="200"></canvas>
+        <img src="@/assets/logo.png" alt="">
       </div>
     </div>
     <trackBlock
@@ -37,7 +37,8 @@ export default {
         }
       ],
       image: null,
-      target: 0
+      target: 0,
+      layer:0, //0代表绘图层 1代表图片层
     };
   },
   components: {
@@ -110,18 +111,33 @@ export default {
       });
     },
     insert: function() {
-      let canvas = this.$refs.canvas;
-      let context = canvas.getContext("2d");
-      if (this.image == null) {
-        let img = new Image();
-        img.src = require("@/assets/logo.png");
-        this.image = img;
-        img.onload = function() {
-          context.drawImage(this, 0, 0);
-        };
-      } else {
-      context.drawImage(this.image,0,0,300,300,100,100,300,300);
+      console.log('insert');
+      // let canvas = this.$refs.canvas;
+      // let context = canvas.getContext("2d");
+      // if (this.image == null) {
+      //   let img = new Image();
+      //   img.src = require("@/assets/logo.png");
+      //   this.image = img;
+      //   img.onload = function() {
+      //     context.drawImage(this, 0, 0);
+      //   };
+      // } else {
+      // context.drawImage(this.image,0,0,300,300,100,100,300,300);
+      // }
+    },
+    choiceLayer:function(name){
+     console.log(name);
+    },
+    toolEvent:function(EventName,...args){
+      let eventManger={
+        run:function(){
+          this[EventName](...args);
+        },
+        importCode:this.importCode,
+        insert:this.insert,
+        choiceLayout:this.choiceLayer
       }
+      eventManger.run();
     }
   },
   watch: {

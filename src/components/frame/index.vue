@@ -80,9 +80,10 @@ export default {
     left: 100%;
     text-align: left;
     width: fit-content;
-    padding: 1rem;
-    background: rgb(50, 117, 70);
-    color: white;
+    padding: 0.5rem;
+    color:rgb(52, 73, 94);
+    background: rgba(255, 255, 255, 0.8);
+    font-size:1.2rem;
     z-index: 4;
     border-radius: 5px;
     transition: 1s;
@@ -97,8 +98,8 @@ export default {
     text-align: left;
     width: fit-content;
     padding: 0.1rem 0;
-    background: rgb(23, 93, 104);
-    color: white;
+    color:rgb(52, 73, 94);
+    background: rgba(255, 255, 255, 0.8);
     z-index: 4;
     border-radius: 5px;
     transition: 1s;
