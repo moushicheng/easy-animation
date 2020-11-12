@@ -1,5 +1,5 @@
 <template>
-  <div class="popover">
+  <div class="popover" ref="popover">
     <div class="content" @click="$emit('click')" @contextmenu.prevent="open">
       {{ content }}
     </div>
@@ -7,6 +7,7 @@
     <div class="contextmenu" ref="menu">
       <div @click="adjustData" class="menu-item">adjust</div>
       <div @click="deleteData" class="menu-item">delete</div>
+      <div @click="dragData" class="menu-item">drag</div>
     </div>
   </div>
 </template>
@@ -20,7 +21,6 @@ export default {
       pop: null
     };
   },
-  components: {},
   mounted() {
     this.menu = this.$refs.menu;
     this.pop = this.$refs.pop;
@@ -35,6 +35,11 @@ export default {
       console.log("adjust");
       this.$emit("adjust");
       this.manger("close");
+    },
+    dragData:function(){
+      console.log('dragData');
+      this.$emit("drag");
+      this.manger('close')
     },
     open: function() {
       let menu = this.menu;
@@ -108,7 +113,7 @@ export default {
       padding: 0.1rem 1rem;
       width: 100%;
     }
-    .menu-item:nth-child(1) {
+    .menu-item:nth-last-of-type(n+2) {
       border-bottom: 1px solid;
     }
   }

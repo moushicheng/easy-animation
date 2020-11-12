@@ -23,9 +23,10 @@
         :popContent=" formatTime(item.time)"
         class="frame"
         ref="frame"
-        @click="onFrameClick(item.order)"
+        @click=" onFrameClick(item.order)"
         @delete='deleteData(item.order)'
         @adjust='adjustData(item)'
+        @drag="onDrag(item.order)"
         >
       </div>
       <div id="plusBtn" @click="addFrame">+</div>
@@ -76,11 +77,10 @@ export default {
       maxTime: new Date(2500),
       timeLineData:['00:00.000"','00:00.500"','00:01.000"','00:01.500"','00:02.000"','00:02.500"'],
       target:0,
+      frameX:null,
     };
   },
   components: {frame},
-  mounted() {
-  },
   watch:{
     timeData:{
       handler:function(){ //使帧对其时间轨,根据f(时间/总时间) -> f(位置)
@@ -185,6 +185,38 @@ export default {
       this.formData.type='changeMaxTime';
       this.dialogVisible = true;
     },
+    onDrag:function(order){
+      let frame=this.$refs.frame[order].$el;
+      let container= this.$refs.frameContainer;
+      let b=this.$refs.timeItem.clientWidth;
+      let self=this;
+
+      let pop=frame.children[1];
+      container.onmousedown = function(e){
+                    if(self.frameX==null){
+                      self.frameX = e.pageX-frame.offsetLeft;
+                    }
+                    let frameX=self.frameX
+                    document.onmousemove = function(e){
+                        let ratio=(e.pageX -frameX)/(container.clientWidth-b);
+                        if(ratio<=0)ratio=0;
+                        if(ratio>1)ratio=1;
+                        self.timeData[order].time=new Date(self.maxTime*1*ratio);
+
+                        let popLeft=pop.getBoundingClientRect().left+pop.clientWidth;
+                        let ww=window.innerWidth;
+                        if(popLeft>=ww-150)pop.style.transform=`translateX(-${(popLeft-ww+50)}px)`
+                        else{
+                          pop.style.transform=null;
+                        }
+                    }
+                      document.onmouseup = function () {
+                    //清除盒子的移动事件;
+                    document.onmousemove = null;
+                    container.onmousedown=null;
+                };
+                };
+    },
     formatTime //格式化时间
   }
 };
@@ -211,7 +243,7 @@ export default {
         background:white;
         color:rgb(52, 73, 94);
         border-radius: 5px;
-        padding:1px 5px;
+        padding:1px 5px 1px 0;
       }
       .time-item:nth-child(6):hover{
          color:rgb(52, 73, 94);

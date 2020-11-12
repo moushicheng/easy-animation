@@ -7,12 +7,14 @@
           <canvas ref="canvas" width="200" height="200"></canvas>
         </div>
         <div id="imageLayer" :style="imagelayerStyle">
-          <vue-draggable-resizable :w="100" :h="100" :parent="true" v-for="(img, index) in imgList" :key="index" >
-            <img
-              :src="img.url"
-              @click="test"
-              class="img-item"
-            />
+          <vue-draggable-resizable
+            :w="100"
+            :h="100"
+            :parent="true"
+            v-for="(img, index) in imgList"
+            :key="index"
+          >
+            <img :src="img.url" @click="test" class="img-item" />
           </vue-draggable-resizable>
           <!-- <vue-draggable-resizable
             :w="100"
@@ -103,6 +105,9 @@ export default {
         //去除最后一个点，因为它实际上是废的
         item.data.pop();
       }
+      this.points=this.points.sort((a,b)=>{
+        return a.time-b.time;
+      })
       this.points = pointShake(this.points);
       let code = CreateImportCode({
         points: this.points,
@@ -166,6 +171,25 @@ export default {
       },
       true
     );
+    window.onresize = () => {
+      //并无软用
+      let c = this.$refs.canvas;
+      let db = this.$refs.drawBlock;
+      let maxHeight = db.clientHeight - 15;
+      let maxWidth = db.clientWidth - 15;
+      let check = true;
+      if (c.width * 1 >= maxWidth) {
+        db.style.display = "block";
+        check = false;
+      }
+      if (c.height * 1 >= maxHeight) {
+        db.style.display = "block";
+        check = false;
+      }
+      if (check) {
+        db.style.display = "flex";
+      }
+    };
   },
   watch: {
     resolution: function(val) {
@@ -210,11 +234,14 @@ export default {
       justify-content: center;
       align-items: center;
       position: relative;
+      overflow: auto;
       #drawLayer {
-        border: 1px solid rgb(139, 139, 139);
         background: rgba(0, 0, 0, 0);
         position: absolute;
-        z-index: 2;
+        z-index: 20;
+        canvas {
+          border: 1px solid rgb(139, 139, 139);
+        }
       }
       #imageLayer {
         position: absolute;
@@ -222,7 +249,7 @@ export default {
         height: 100%;
         top: 0;
         left: 0;
-        z-index: 1;
+        z-index: 10;
         .vdr {
           border: 1px dashed rgba(255, 255, 255, 0.3);
         }
