@@ -27,6 +27,7 @@
         @delete='deleteData(item.order)'
         @adjust='adjustData(item)'
         @drag="onDrag(item.order)"
+        @mousedown.native="onDrag(item.order)"
         >
       </div>
       <div id="plusBtn" @click="addFrame">+</div>
@@ -53,9 +54,9 @@
 </template>
 
 <script>
-import {verify} from "@/utils/form.js";
-import {formatTime} from "@/utils/index.js"
-import frame from "@/components/frame/index"
+import { verify } from "@/utils/form.js";
+import { formatTime } from "@/utils/index.js";
+import frame from "@/components/frame/index";
 
 export default {
   name: "trackBlock",
@@ -64,167 +65,179 @@ export default {
       timeData: [
         {
           order: 0,
-          time: new Date(0)
+          time: new Date(0),
         },
       ],
-      formData:{
-        minute:0,
-        second:0,
-        millisecond:0,
-        type:null,
+      formData: {
+        minute: 0,
+        second: 0,
+        millisecond: 0,
+        type: null,
       },
       dialogVisible: false,
       maxTime: new Date(2500),
-      timeLineData:['00:00.000"','00:00.500"','00:01.000"','00:01.500"','00:02.000"','00:02.500"'],
-      target:0,
-      frameX:null,
+      timeLineData: [
+        '00:00.000"',
+        '00:00.500"',
+        '00:01.000"',
+        '00:01.500"',
+        '00:02.000"',
+        '00:02.500"',
+      ],
+      target: 0,
+      frameX: null,
     };
   },
-  components: {frame},
-  watch:{
-    timeData:{
-      handler:function(){ //使帧对其时间轨,根据f(时间/总时间) -> f(位置)
-        setTimeout(()=>{
-        //重绘时间轨
-        this.reDrawTrack();
-        //对其帧位置
-        let frames=this.$refs.frame;
-        let timeContainer=this.$refs.timeContainer;
-        let tcWidth=timeContainer.clientWidth;
-        let b=this.$refs.timeItem.clientWidth;
+  components: { frame },
+  watch: {
+    timeData: {
+      handler: function () {
+        //使帧对其时间轨,根据f(时间/总时间) -> f(位置)
+        setTimeout(() => {
+          //重绘时间轨
+          this.reDrawTrack();
+          //对其帧位置
+          let frames = this.$refs.frame;
+          let timeContainer = this.$refs.timeContainer;
+          let tcWidth = timeContainer.clientWidth;
+          let b = this.$refs.timeItem.clientWidth;
 
-         for (const index in frames) {
-          const frame=frames[index].$el;
-          const data=this.timeData[index];
+          for (const index in frames) {
+            const frame = frames[index].$el;
+            const data = this.timeData[index];
 
-          let ratio=((data.time*1)/(this.maxTime*1)); //粗调
-          let offset=-b*ratio+'px'; //细调,消除偏移量
-          ratio=ratio*100+"%";
-          frame.style.setProperty('--x',ratio);
-          frame.style.setProperty('--y',offset);
-         }
-        })
+            let ratio = (data.time * 1) / (this.maxTime * 1); //粗调
+            let offset = -b * ratio + "px"; //细调,消除偏移量
+            ratio = ratio * 100 + "%";
+            frame.style.setProperty("--x", ratio);
+            frame.style.setProperty("--y", offset);
+          }
+        });
       },
-      deep:true
-    }
+      deep: true,
+    },
   },
 
   methods: {
-    addFrame: function(done) { //添加新帧
-      this.formData.type='add';
+    addFrame: function (done) {
+      //添加新帧
+      this.formData.type = "add";
       this.dialogVisible = true;
     },
     //表单提交
-    submitForm: function() {
+    submitForm: function () {
       this.dialogVisible = false;
-      let min = this.formData.minute
-      let second = this.formData.second
-      let ms = this.formData.millisecond
-      if (!verify(min, "range", "0,60", this.onVerifyErrot)||!verify(second, "range", "0,60", this.onVerifyErrot)||!verify(ms, "range", "0,1000", this.onVerifyErrot)) return;
+      let min = this.formData.minute;
+      let second = this.formData.second;
+      let ms = this.formData.millisecond;
+      if (
+        !verify(min, "range", "0,60", this.onVerifyErrot) ||
+        !verify(second, "range", "0,60", this.onVerifyErrot) ||
+        !verify(ms, "range", "0,1000", this.onVerifyErrot)
+      )
+        return;
       let allTime = new Date(min * 60 * 1000 + second * 1000 + ms * 1);
-      if(this.formData.type=='add'){
+      if (this.formData.type == "add") {
         this.timeData.push({
           order: this.timeData.length,
           time: allTime,
         });
         //传递新帧给主页面
-        this.$emit('frameDelivery',allTime.valueOf());
-        this.$emit('choiceTarget',this.timeData.length-1);
-      this.target=this.timeData.length-1;
-
-      }else if(this.formData.type=='change'){
-        this.timeData[this.target].time=allTime;
-        this.$emit('changeFrame',{order:this.target,time:allTime});
-        this.$emit('choiceTarget',this.target);
-      }else if(this.formData.type=='changeMaxTime'){
-        this.maxTime=allTime;
+        this.$emit("frameDelivery", allTime.valueOf());
+        this.$emit("choiceTarget", this.timeData.length - 1);
+        this.target = this.timeData.length - 1;
+      } else if (this.formData.type == "change") {
+        this.timeData[this.target].time = allTime;
+        this.$emit("changeFrame", { order: this.target, time: allTime });
+        this.$emit("choiceTarget", this.target);
+      } else if (this.formData.type == "changeMaxTime") {
+        this.maxTime = allTime;
         this.reDrawTrack();
       }
       if (this.maxTime <= allTime) {
         this.maxTime = allTime;
       }
     },
-    onVerifyErrot: function(message) { //检测表单
+    onVerifyErrot: function (message) {
+      //检测表单
       this.$message({ message, type: "warning" });
     },
-    reDrawTrack:function(){ //重绘轨道时间轴
-     let maxT=this.maxTime;
-     let t=this.maxTime/5;
-     let result=['00:00.000"'];
-     for(let i=1;i<5;i++){
-        result.push(this.formatTime( new Date(t*i) ));
-     }
-     result.push(this.formatTime(maxT));
-     this.timeLineData=result;
-     this.timeLineData.push(); //强制更新
+    reDrawTrack: function () {
+      //重绘轨道时间轴
+      let maxT = this.maxTime;
+      let t = this.maxTime / 5;
+      let result = ['00:00.000"'];
+      for (let i = 1; i < 5; i++) {
+        result.push(this.formatTime(new Date(t * i)));
+      }
+      result.push(this.formatTime(maxT));
+      this.timeLineData = result;
+      this.timeLineData.push(); //强制更新
     },
-    adjustData:function(item){ //重设单独帧的数据
-     this.dialogVisible = true;
-     this.target=item.order;
-     this.formData.type='change';
-     let time=item.time;
+    adjustData: function (item) {
+      //重设单独帧的数据
+      this.dialogVisible = true;
+      this.target = item.order;
+      this.formData.type = "change";
+      let time = item.time;
       this.formData.minute = time.getMinutes();
-      this.formData.second= time.getSeconds();
-      this.formData.millisecond= time.getMilliseconds();
+      this.formData.second = time.getSeconds();
+      this.formData.millisecond = time.getMilliseconds();
     },
-    deleteData:function(order){
+    deleteData: function (order) {
       this.timeData.splice(order, 1);
       this.reDrawFrame();
     },
-    onFrameClick:function(order){
-      this.$emit('choiceTarget',order);
-      this.target=order;
+    onFrameClick: function (order) {
+      this.$emit("choiceTarget", order);
+      this.target = order;
     },
-    reDrawFrame:function(){
-      let count=0;
+    reDrawFrame: function () {
+      let count = 0;
       for (const item of this.timeData) {
-        item.order=count++;
+        item.order = count++;
       }
     },
-    adjustMaxTime:function(){
-      this.formData.type='changeMaxTime';
+    adjustMaxTime: function () {
+      this.formData.type = "changeMaxTime";
       this.dialogVisible = true;
     },
-    onDrag:function(order){
-      let frame=this.$refs.frame[order].$el;
-      let container= this.$refs.frameContainer;
-      let b=this.$refs.timeItem.clientWidth;
-      let self=this;
+    onDrag: function (order) {
+        let frame = this.$refs.frame[order].$el;
+        let container = this.$refs.frameContainer;
+        let b = this.$refs.timeItem.clientWidth;
+        let self = this;
+        let pop = frame.children[1];
 
-      let pop=frame.children[1];
-      container.onmousedown = function(e){
-                    if(self.frameX==null){
-                      self.frameX = e.pageX-frame.offsetLeft;
-                    }
-                    let frameX=self.frameX
-                    document.onmousemove = function(e){
-                        let ratio=(e.pageX -frameX)/(container.clientWidth-b);
-                        if(ratio<=0)ratio=0;
-                        if(ratio>1)ratio=1;
-                        self.timeData[order].time=new Date(self.maxTime*1*ratio);
-
-                        let popLeft=pop.getBoundingClientRect().left+pop.clientWidth;
-                        let ww=window.innerWidth;
-                        if(popLeft>=ww-150)pop.style.transform=`translateX(-${(popLeft-ww+50)}px)`
-                        else{
-                          pop.style.transform=null;
-                        }
-                    }
-                      document.onmouseup = function () {
-                    //清除盒子的移动事件;
-                    document.onmousemove = null;
-                    container.onmousedown=null;
-                };
-                };
+        let x = container.offsetLeft + 8;
+        document.onmousemove = function (e) {
+          let ratio = (e.pageX - x) / (container.clientWidth - b);
+          if (ratio <= 0) ratio = 0;
+          if (ratio > 1) ratio = 1;
+          self.timeData[order].time = new Date(self.maxTime * ratio);
+          //对hover框进行操作，触底反弹
+          let popLeft = pop.getBoundingClientRect().left + pop.clientWidth;
+          let ww = window.innerWidth;
+          if (popLeft >= ww - 150)
+            pop.style.transform = `translateX(-${popLeft - ww + 50}px)`;
+          else {
+            pop.style.transform = null;
+          }
+        };
+        document.onmouseup = function () {
+          //清除盒子的移动事件;
+          document.onmousemove = null;
+        };
     },
-    formatTime //格式化时间
-  }
+    formatTime, //格式化时间
+  },
 };
 </script>
 
 <style lang="scss" scoped>
 #trackBlock {
   margin-top: 1rem;
+  width:100%;
   #timeLine {
     display: flex;
     p {
@@ -237,51 +250,51 @@ export default {
       display: flex;
       justify-content: space-between;
       margin: 0 1rem;
-      margin-top:5px;
-      .time-item:nth-child(6){
+      margin-top: 5px;
+      .time-item:nth-child(6) {
         cursor: pointer;
-        background:white;
-        color:rgb(52, 73, 94);
+        background: white;
+        color: rgb(52, 73, 94);
         border-radius: 5px;
-        padding:1px 5px 1px 0;
+        padding: 1px 5px 1px 0;
       }
-      .time-item:nth-child(6):hover{
-         color:rgb(52, 73, 94);
-         background: rgba(255, 255, 255, 0.8);
+      .time-item:nth-child(6):hover {
+        color: rgb(52, 73, 94);
+        background: rgba(255, 255, 255, 0.8);
       }
     }
   }
   #frameTrack {
-    #frameTarget{
-      margin-left:2rem;
-      width:4rem;
+    #frameTarget {
+      margin-left: 2rem;
+      width: 4rem;
     }
     margin-top: 0.5rem;
     display: flex;
-    align-items:center;
+    align-items: center;
     #frameContainer {
-       height:1rem;
-       border-top:1px solid rgba(255, 255, 255,0.5);
-       border-bottom:1px solid rgba(255, 255, 255,0.5);
-       flex-grow: 1;
-       position: relative;
+      height: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.5);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+      flex-grow: 1;
+      position: relative;
       .frame {
-         --x:'0%';
-         --y:'0px';
-         position: absolute;
-         top:0;
-         left:var(--x);
-         transform: translateX(var(--y));
+        --x: "0%";
+        --y: "0px";
+        position: absolute;
+        top: 0;
+        left: var(--x);
+        transform: translateX(var(--y));
       }
     }
     #plusBtn {
-      font-size:1rem;
+      font-size: 1rem;
       font-weight: 900;
       color: white;
       cursor: pointer;
       border-radius: 50%;
-      &:hover{
-        color:#289baf
+      &:hover {
+        color: #289baf;
       }
     }
   }

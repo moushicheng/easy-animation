@@ -226,9 +226,9 @@ export default {
   flex-direction: column;
   .wrapper {
     display: flex;
+    flex-grow: 1;
     #draw-block {
       flex-grow: 1;
-      height: 80vh;
       border: 1px solid white;
       display: flex;
       justify-content: center;

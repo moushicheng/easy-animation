@@ -5,9 +5,8 @@
     </div>
     <div class="popContent" ref="pop">time:{{ popContent }}</div>
     <div class="contextmenu" ref="menu">
-      <div @click="adjustData" class="menu-item">adjust</div>
-      <div @click="deleteData" class="menu-item">delete</div>
-      <div @click="dragData" class="menu-item">drag</div>
+      <div @click="event('adjust')" class="menu-item">adjust</div>
+      <div @click="event('delete')" class="menu-item">delete</div>
     </div>
   </div>
 </template>
@@ -26,20 +25,9 @@ export default {
     this.pop = this.$refs.pop;
   },
   methods: {
-    deleteData: function() {
-      console.log("delete");
-      this.$emit("delete");
-      this.manger("close");
-    },
-    adjustData: function() {
-      console.log("adjust");
-      this.$emit("adjust");
-      this.manger("close");
-    },
-    dragData:function(){
-      console.log('dragData');
-      this.$emit("drag");
-      this.manger('close')
+    event:function(eventName){
+        this.$emit(eventName);
+        this.manger("close");
     },
     open: function() {
       let menu = this.menu;
@@ -69,6 +57,7 @@ export default {
 .popover {
   position: relative;
   width: max-content;
+ user-select: none;
   .content {
     cursor: pointer;
     width: 1.5rem;

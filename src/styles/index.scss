@@ -1,4 +1,5 @@
 @import "./page.scss";
+
 body {
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
@@ -45,3 +46,4 @@ input {
   outline: none;
   border: 1px solid white;
 }
+@import "./media.scss";

@@ -71,7 +71,7 @@
     </div>
     <input
       type="file"
-      style="filter:alpha(opacity=0);opacity:0;"
+      style="filter:alpha(opacity=0);opacity:0;  position: absolute;"
       ref="imgUpload"
     />
   </div>
@@ -149,14 +149,16 @@ export default {
 
 <style lang="scss" scoped>
 #toolBar {
-  width: 10rem;
+  max-width: 10rem;
   border: 1px solid white;
   padding: 1rem;
+  min-height:80vh;
+
   .tool-item {
-    cursor: pointer;
     margin-top: 1rem;
     display: flex;
     justify-content: space-between;
+    cursor: pointer;
     transition: 0.05s;
     &:hover {
       font-size: 1.25rem;

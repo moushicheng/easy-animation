@@ -1,0 +1,13 @@
+@media screen and (max-width: 600px) {
+    .tool-item{
+        p{
+            display: none;
+        }
+    }
+    #toolBar{
+        #resolution{
+            display: none;
+        }
+    }
+ 
+}

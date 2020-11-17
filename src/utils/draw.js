@@ -8,7 +8,7 @@ let commandManger = {
     },
     initial: function(x, y) {
       ctx.strokeStyle = "#FFFFFF";
-      ctx.strokeRect(x - 2, y - 2, 4, 4);
+      ctx.strokeRect(x - 2, y - 2, 6, 6);
     }
   },
   common: {
