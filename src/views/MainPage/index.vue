@@ -4,7 +4,7 @@
       <toolBar v-model="resolution" @events="toolEvent"></toolBar>
       <div id="draw-block" ref="drawBlock">
         <div id="drawLayer" :style="drawlayerStyle">
-          <canvas ref="canvas" width="200" height="200"></canvas>
+          <canvas ref="canvas" width="800" height="400"></canvas>
         </div>
         <div id="imageLayer" :style="imagelayerStyle">
           <vue-draggable-resizable
@@ -14,22 +14,8 @@
             v-for="(img, index) in imgList"
             :key="index"
           >
-            <img :src="img.url" @click="test" class="img-item" />
+            <img :src="img.url" class="img-item" />
           </vue-draggable-resizable>
-          <!-- <vue-draggable-resizable
-            :w="100"
-            :h="100"
-            @dragging="onDrag"
-            @resizing="onResize"
-            :parent="true"
-          >
-            <img
-              src="@/assets/logo.png"
-              alt=""
-              @click="test"
-              class="img-item"
-            />
-          </vue-draggable-resizable> -->
         </div>
       </div>
     </div>
@@ -38,6 +24,15 @@
       @choiceTarget="choiceTarget"
       @changeFrame="changeFrame"
     ></trackBlock>
+
+    <div id="github">
+      <div class="mask"></div>
+      <div class="icon">
+        <a href="https://github.com/a1163675107/easy-animation"
+          ><i class="fa fa-github" aria-hidden="true"></i
+        ></a>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -50,17 +45,18 @@ export default {
   name: "",
   data() {
     return {
-      resolution: [200, 200],
+      resolution: [800, 400],
       points: [
         {
           order: 0,
           time: new Date(0),
           data: [],
+          cache: [],
           finish: false
         }
       ],
-      image: null,
       target: 0,
+      image: null,
       layer: 1, //1绘图层 0图片层
       imgList: null
     };
@@ -95,31 +91,72 @@ export default {
     },
     choiceTarget: function(m) {
       this.target = m;
+      this.draw();
     },
     changeFrame: function(item) {
       this.points[item.order].time = item.time;
     },
     //导出代码
     importCode: function() {
+      let cache = [];
       for (const item of this.points) {
         //去除最后一个点，因为它实际上是废的
-        item.data.pop();
+        cache.push(item.data.pop());
       }
-      this.points=this.points.sort((a,b)=>{
-        return a.time-b.time;
-      })
+      this.points = this.points.sort((a, b) => {
+        return a.time - b.time;
+      });
       this.points = pointShake(this.points);
-      let code = CreateImportCode({
+      CreateImportCode({
         points: this.points,
         viewX: this.resolution[0],
         viewY: this.resolution[1]
-      });
+      })
+        .then(res => {
+          this.$alert(res, "SUCCESS", {
+            confirmButtonText: "确定"
+          });
+        })
+        .catch(err => {
+          this.$alert(err, "ERROR", {
+            confirmButtonText: "确定"
+          });
+          for (let index in this.points) {
+            if(cache[index])this.points[index].data.push(cache[index]);
+          }
+        });
     },
     insert: function(imgList) {
       this.imgList = imgList;
     },
     choiceLayer: function(name) {
       this.layer = name;
+    },
+    controlStep: function(mode) {
+      //0撤回 1前进
+      let p = this.points[this.target];
+      if (mode == 0) {
+        if (p.data.length != 0) {
+          p.cache.push(p.data.pop());
+          if (p.finish == true) {
+            //完成时回退，取消完成状态
+            p.finish = false;
+          }
+        }
+      } else {
+        if (p.cache.length != 0) {
+          let c = p.cache.pop();
+          let o = p.data[0];
+          p.data.push(c);
+          c = c.split(",");
+          o = o.split(",");
+          if (Math.abs(o[0] - c[0]) < 6 && Math.abs(o[1] - c[1]) < 6) {
+            //前进点是最终点，则确定完成状态
+            p.finish = true;
+          }
+        }
+      }
+      this.draw();
     },
     toolEvent: function(EventName, ...args) {
       let eventManger = {
@@ -128,12 +165,10 @@ export default {
         },
         importCode: this.importCode,
         insert: this.insert,
-        choiceLayout: this.choiceLayer
+        choiceLayout: this.choiceLayer,
+        controlStep: this.controlStep
       };
       eventManger.run();
-    },
-    test: function() {
-      console.log(1);
     }
   },
   mounted() {
@@ -145,6 +180,7 @@ export default {
       "click",
       function(e) {
         if (self.layer == 0 || e.target.className == "img-item") return; //图片层则不绘画||防误触
+        self.points[self.target].cache = []; //下笔时清空点缓存区数据
         //绘画函数
         if (self.points[self.target].finish == true) return; //如果完成了则直接结束
         let command = null; //设置绘画命令
@@ -163,6 +199,11 @@ export default {
         } else if (Math.abs(originX - x) < 6 && Math.abs(originY - y) < 6) {
           //如果点到起始点，则闭合图形
           command = "close";
+          self.$notify({
+            title: "FINISH",
+            message: "完成一帧画面的绘制",
+            type: "success"
+          });
         }
         self.draw(command); //开始绘制
         if (command == "close") {
@@ -178,11 +219,7 @@ export default {
       let maxHeight = db.clientHeight - 15;
       let maxWidth = db.clientWidth - 15;
       let check = true;
-      if (c.width * 1 >= maxWidth) {
-        db.style.display = "block";
-        check = false;
-      }
-      if (c.height * 1 >= maxHeight) {
+      if (c.width * 1 >= maxWidth || c.height * 1 >= maxHeight) {
         db.style.display = "block";
         check = false;
       }
@@ -224,9 +261,9 @@ export default {
 #main-page {
   display: flex;
   flex-direction: column;
+  position: relative;
   .wrapper {
     display: flex;
-    flex-grow: 1;
     #draw-block {
       flex-grow: 1;
       border: 1px solid white;
@@ -258,6 +295,28 @@ export default {
           height: 100%;
         }
       }
+    }
+  }
+  #github {
+    position: absolute;
+    top: 0;
+    right: 0;
+    .mask {
+      width: 5rem;
+      height: 5rem;
+      background: rgba(255, 255, 255, 0.3);
+      clip-path: polygon(0 0, 100% 0, 100% 100%);
+    }
+    .icon {
+      font-size: 2rem;
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      z-index: 50;
+      transition: 0.5s;
+    }
+    .icon:hover {
+      transform: rotate(45deg);
     }
   }
 }

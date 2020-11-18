@@ -56,7 +56,7 @@
 <script>
 import { verify } from "@/utils/form.js";
 import { formatTime } from "@/utils/index.js";
-import frame from "@/components/frame/index";
+import {frame} from "@/components/index.js";
 
 export default {
   name: "trackBlock",
@@ -209,13 +209,14 @@ export default {
         let self = this;
         let pop = frame.children[1];
 
-        let x = container.offsetLeft + 8;
+        let x = container.offsetLeft+16; //1rem=16
         document.onmousemove = function (e) {
           let ratio = (e.pageX - x) / (container.clientWidth - b);
           if (ratio <= 0) ratio = 0;
           if (ratio > 1) ratio = 1;
           self.timeData[order].time = new Date(self.maxTime * ratio);
-          //对hover框进行操作，触底反弹
+
+          //对hover框进行操作，触底反弹,和上面的帧拖动逻辑无关,但不需要解耦（目测日后不需要维护hh
           let popLeft = pop.getBoundingClientRect().left + pop.clientWidth;
           let ww = window.innerWidth;
           if (popLeft >= ww - 150)

@@ -1,9 +1,8 @@
 let ctx = null; //存储环境对象
 let _dom = null; //canvas dom对象
-let commandManger = {
+let cm = { //commandManger
   sFunc: {
     close: function() {
-      console.log('close');
       ctx.closePath();
     },
     initial: function(x, y) {
@@ -19,35 +18,38 @@ let commandManger = {
       return { x, y };
     },
     drawLine(x, y) {
-      ctx.strokeStyle = "#000000";
       ctx.lineTo(x, y);
     },
     clear() {
       ctx.clearRect(0, 0, _dom.width, _dom.height);
     },
-    drawImage() {}
+    choiceLineColor(index,target){
+      if(index!=target)ctx.strokeStyle='rgba(0,0,0,0.5)'
+      else ctx.strokeStyle='rgba(0,0,0)'
+    }
   }
 };
 
-function draw(allData, target, dom, command) {
+function draw(allData,target,dom, command) {
   if (!dom || !ctx) {
     _dom = dom;
     ctx = dom.getContext("2d");
   }
-  commandManger.common.clear();
+  cm.common.clear();
 
-  for (const item of allData) {
+  for (let [index,item] of Object.entries(allData)) {
     ctx.beginPath();
     let data = item.data;
     for (let point = data[0], i = 0; i < data.length; i++, point = data[i]) {
       //使用所有数据点，进行一次绘画
-      let { x, y } = commandManger.common.getPoints(point); //获得具体点数据
+      let { x, y } = cm.common.getPoints(point); //获得具体点数据
 
-      if (i == 0) commandManger.sFunc["initial"](x, y);
+      if (i == 0) cm.sFunc["initial"](x, y);
       if (command == "close" && i == data.length - 1) {
-        commandManger.sFunc[command];
+        cm.sFunc[command];
       }
-      commandManger.common.drawLine(x, y);
+      cm.common.choiceLineColor(index,target)
+      cm.common.drawLine(x, y);
 
     }
     ctx.stroke();

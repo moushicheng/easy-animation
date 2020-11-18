@@ -1,65 +1,91 @@
 <template>
   <div id="toolBar">
+    <div class="header">Drawing tools</div>
     <div class="tool-item" @click="choiceTools(0)" :style="changeToolStyle(0)">
-      <p>pointer</p>
-      <i class="fa fa-mouse-pointer" aria-hidden="true"></i>
+      <poper content="pointer" popContent="切换到图片层,可拖动图片,注意：如果图片进入中间绘图区,不使用该工具就无法拖动了！"></poper>
+      <div class="icon">
+    <i class="fa fa-mouse-pointer" aria-hidden="true"></i>
+      </div>
+
     </div>
     <div class="tool-item" @click="choiceTools(1)" :style="changeToolStyle(1)">
-      <p>pen</p>
-      <i class="fa fa-pencil" aria-hidden="true"></i>
+      <poper content="pen" popContent="切换到绘图层,绘制画面"></poper>
+      <div class="icon">
+  <i class="fa fa-pencil" aria-hidden="true"></i>
+      </div>
+
     </div>
     <div class="tool-item" @click="choiceTools(2)" :style="changeToolStyle(2)">
-      <p>fill</p>
+       <poper content="fill" popContent="给图形填充颜色(making...)"></poper>
+      <div class="icon">
       <i class="fa fa-circle" aria-hidden="true"></i>
+      </div>
+
     </div>
     <div class="tool-item">
-      <p>color</p>
+       <poper content="color" popContent="选择一个颜色(making)"></poper>
+      <div class="icon">
       <i class="fa fa-braille" aria-hidden="true"></i>
+      </div>
     </div>
-    <!-- <div class="tool-item" id="layer" @click="openLayout">
-      <p>layer</p>
-      <i class="fa fa-arrow-right" aria-hidden="true"></i>
-      <div class="switch-box" v-if="layerShow">
-        <header>Switch A Layer</header>
-        <div class="switch-item" @click="choiceLayout('draw')">
-          <p>draw</p>
-          <i class="fa fa-check" aria-hidden="true" v-if="layer=='draw'"></i>
-        </div>
-        <div class="switch-item" @click="choiceLayout('image')">
-          <p>image</p>
-           <i class="fa fa-check" aria-hidden="true" v-if="layer=='image'"></i>
-        </div>
+    <div class="header">Auxiliary tools</div>
+    <!-- <div class="tool-item">
+      <p>show</p>
+      <div class="icon">
+        <i class="fa fa-eye" aria-hidden="true"></i>
+      </div>
+    </div>
+    <div class="tool-item">
+      <p>hide</p>
+      <div class="icon">
+        <i class="fa fa-eye-slash" aria-hidden="true"></i>
       </div>
     </div> -->
-    <div class="tool-item">
-      <p>showAll</p>
+    <div class="tool-item" @click="control(0)">
+       <poper content="back" popContent="字面意思,撤回"></poper>
+      <div class="icon">
+        <i class="fa fa-arrow-left" aria-hidden="true"></i>
+      </div>
     </div>
-    <div class="tool-item">
-      <p>hideAnother</p>
+    <div class="tool-item" @click="control(1)">
+      <poper content="go" popContent="字面意思,前进"></poper>
+      <div class="icon">
+        <i class="fa fa-arrow-right" aria-hidden="true"></i>
+      </div>
     </div>
+
+     <div class="header">Other tools</div>
     <div class="tool-item" id="insertTool">
       <div id="insertHeader" @click="insertImage">
-        <p>insert</p>
-        <i class="fa fa-file-image-o" aria-hidden="true"></i>
+         <poper content="insert" popContent="插入图片"></poper>
+        <div class="icon">
+          <i class="fa fa-file-image-o" aria-hidden="true"></i>
+        </div>
       </div>
       <div class="show-box" v-if="imgList.length != 0">
         <div v-for="(img, index) in imgList" :key="index" class="show-item">
           <p>{{ img.name }}</p>
-          <i
-            class="fa fa-trash-o"
-            aria-hidden="true"
-            @click="deleteImg(index)"
-          ></i>
+          <div class="icon">
+            <i
+              class="fa fa-trash-o"
+              aria-hidden="true"
+              @click="deleteImg(index)"
+            ></i>
+          </div>
         </div>
       </div>
     </div>
     <div class="tool-item">
-      <p>preview</p>
-      <i class="fa fa-desktop" aria-hidden="true"></i>
+       <poper content="preview" popContent="预览动画"></poper>
+      <div class="icon">
+        <i class="fa fa-desktop" aria-hidden="true"></i>
+      </div>
     </div>
     <div class="tool-item" @click="importCode">
-      <p>import</p>
-      <i class="fa fa-download" aria-hidden="true"></i>
+      <poper content="import" popContent="导出css代码"></poper>
+      <div class="icon">
+        <i class="fa fa-download" aria-hidden="true"></i>
+      </div>
     </div>
     <div class="tool-item " id="resolution">
       <p>resolution</p>
@@ -75,9 +101,25 @@
       ref="imgUpload"
     />
   </div>
+      <!-- <div class="tool-item" id="layer" @click="openLayout">
+      <p>layer</p>
+      <i class="fa fa-arrow-right" aria-hidden="true"></i>
+      <div class="switch-box" v-if="layerShow">
+        <header>Switch A Layer</header>
+        <div class="switch-item" @click="choiceLayout('draw')">
+          <p>draw</p>
+          <i class="fa fa-check" aria-hidden="true" v-if="layer=='draw'"></i>
+        </div>
+        <div class="switch-item" @click="choiceLayout('image')">
+          <p>image</p>
+           <i class="fa fa-check" aria-hidden="true" v-if="layer=='image'"></i>
+        </div>
+      </div>
+    </div> -->
 </template>
 
 <script>
+import {poper} from '@/components/index.js'
 export default {
   name: "toolBar",
   data() {
@@ -87,7 +129,7 @@ export default {
       imgList: []
     };
   },
-  components: {},
+  components: {poper},
   mounted() {
     let input = this.$refs.imgUpload;
     let self = this;
@@ -101,7 +143,7 @@ export default {
             url: reader.result,
             name: file.name.slice(-10)
           });
-          self.$emit("events", 'insert',self.imgList);//似乎没有意义
+          self.$emit("events", "insert", self.imgList); //似乎没有意义
         },
         false
       );
@@ -117,7 +159,6 @@ export default {
     insertImage: function() {
       let input = this.$refs.imgUpload;
       this.trigger(input, "click");
-
     },
     openLayout: function() {
       this.layerShow = !this.layerShow;
@@ -134,7 +175,10 @@ export default {
       ele[event]();
     },
     deleteImg(index) {
-      this.imgList.splice(index,1)
+      this.imgList.splice(index, 1);
+    },
+    control(mod){
+      this.$emit("events", "controlStep",mod);
     }
   },
   model: {
@@ -149,12 +193,17 @@ export default {
 
 <style lang="scss" scoped>
 #toolBar {
-  max-width: 10rem;
   border: 1px solid white;
   padding: 1rem;
-  min-height:80vh;
+  min-height: 80vh;
 
+  .header{
+    margin:2rem 0 1rem 0;
+    font-size: 1.3rem;
+    border-bottom: 1px solid rgba(255,255,255,0.5);
+  }
   .tool-item {
+    position: relative;
     margin-top: 1rem;
     display: flex;
     justify-content: space-between;
@@ -164,6 +213,16 @@ export default {
       font-size: 1.25rem;
       color: rgb(159, 208, 212);
     }
+   p{
+     margin-right: 1vw;
+     width:fit-content;
+   }
+   .icon{
+     transition: .3s;
+     &:hover{
+      transform: rotate(15deg);
+    }
+   }
   }
   #insertTool {
     justify-content: flex-start;

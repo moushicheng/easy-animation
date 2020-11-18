@@ -20,8 +20,14 @@ function suppleZero(n,num){
   return num
 }
 
+
+
 //绘制导出代码的形式
 function CreateImportCode({points, viewX, viewY}){
+  let checkCode=check(points);
+  if(checkCode!==true){
+     return Promise.reject(`请在第${checkCode}帧完成一个封闭图形`)
+  }
   points=points.filter(function(item) { //过滤未闭合图形
     if (item.finish == true) {
       return true;
@@ -58,17 +64,17 @@ function CreateImportCode({points, viewX, viewY}){
   for (const item of result) {
      let time=item.time.valueOf();
      let data=item.data;
-     let timeRatio=(time/maxTime)*100+"%"
+     let timeRatio=(time/maxTime)*100
+     if(Number.isNaN(timeRatio))timeRatio=0;
      let frame=`
-       ${timeRatio}{
+       ${timeRatio}%{
         clip-path: polygon(${data})
        }
      `
      cssCode=cssCode+frame;
   }
   cssCode=cssCode+'}'
-  console.log(cssCode);
-  return cssCode
+  return Promise.resolve(cssCode)
 }
 
 function pointShake(points){
@@ -118,6 +124,12 @@ function countNewPoint(point1,point2,amount){ //amount就是点插入数目
      result.push(`${x1*1+offsetX*i},${y1*1+offsetY*i}`)
    }
    return result
+}
+function check(points){
+  for (let [i,item] of Object.entries(points)) {
+     if(item.finish==false)return i;
+  }
+  return true;
 }
 
 export {formatTime,CreateImportCode,pointShake};
