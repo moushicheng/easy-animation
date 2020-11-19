@@ -66,4 +66,12 @@ input {
 	background: rgba(255, 255, 255, 0.1);
 }
 
+.el-message-box{
+  p{
+    white-space:pre-wrap;
+  }
+
+}
+
+
 @import "./media.scss";

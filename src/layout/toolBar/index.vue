@@ -2,30 +2,30 @@
   <div id="toolBar">
     <div class="header">Drawing tools</div>
     <div class="tool-item" @click="choiceTools(0)" :style="changeToolStyle(0)">
-      <poper content="pointer" popContent="切换到图片层,可拖动图片,注意：如果图片进入中间绘图区,不使用该工具就无法拖动了！"></poper>
+      <poper
+        content="pointer"
+        popContent="切换到图片层,可拖动图片,注意：如果图片进入中间绘图区,不使用该工具就无法拖动了！"
+      ></poper>
       <div class="icon">
-    <i class="fa fa-mouse-pointer" aria-hidden="true"></i>
+        <i class="fa fa-mouse-pointer" aria-hidden="true"></i>
       </div>
-
     </div>
     <div class="tool-item" @click="choiceTools(1)" :style="changeToolStyle(1)">
       <poper content="pen" popContent="切换到绘图层,绘制画面"></poper>
       <div class="icon">
-  <i class="fa fa-pencil" aria-hidden="true"></i>
+        <i class="fa fa-pencil" aria-hidden="true"></i>
       </div>
-
     </div>
     <div class="tool-item" @click="choiceTools(2)" :style="changeToolStyle(2)">
-       <poper content="fill" popContent="给图形填充颜色(making...)"></poper>
+      <poper content="fill" popContent="给图形填充颜色(making...)"></poper>
       <div class="icon">
-      <i class="fa fa-circle" aria-hidden="true"></i>
+        <i class="fa fa-circle" aria-hidden="true"></i>
       </div>
-
     </div>
     <div class="tool-item">
-       <poper content="color" popContent="选择一个颜色(making)"></poper>
+      <poper content="color" popContent="选择一个颜色(making)"></poper>
       <div class="icon">
-      <i class="fa fa-braille" aria-hidden="true"></i>
+        <i class="fa fa-braille" aria-hidden="true"></i>
       </div>
     </div>
     <div class="header">Auxiliary tools</div>
@@ -42,7 +42,7 @@
       </div>
     </div> -->
     <div class="tool-item" @click="control(0)">
-       <poper content="back" popContent="字面意思,撤回"></poper>
+      <poper content="back" popContent="字面意思,撤回"></poper>
       <div class="icon">
         <i class="fa fa-arrow-left" aria-hidden="true"></i>
       </div>
@@ -54,10 +54,10 @@
       </div>
     </div>
 
-     <div class="header">Other tools</div>
+    <div class="header">Other tools</div>
     <div class="tool-item" id="insertTool">
       <div id="insertHeader" @click="insertImage">
-         <poper content="insert" popContent="插入图片"></poper>
+        <poper content="insert" popContent="插入图片"></poper>
         <div class="icon">
           <i class="fa fa-file-image-o" aria-hidden="true"></i>
         </div>
@@ -75,8 +75,8 @@
         </div>
       </div>
     </div>
-    <div class="tool-item">
-       <poper content="preview" popContent="预览动画"></poper>
+    <div class="tool-item" @click="preview">
+      <poper content="preview" popContent="预览动画"></poper>
       <div class="icon">
         <i class="fa fa-desktop" aria-hidden="true"></i>
       </div>
@@ -101,7 +101,7 @@
       ref="imgUpload"
     />
   </div>
-      <!-- <div class="tool-item" id="layer" @click="openLayout">
+  <!-- <div class="tool-item" id="layer" @click="openLayout">
       <p>layer</p>
       <i class="fa fa-arrow-right" aria-hidden="true"></i>
       <div class="switch-box" v-if="layerShow">
@@ -119,7 +119,7 @@
 </template>
 
 <script>
-import {poper} from '@/components/index.js'
+import { poper } from "@/components/index.js";
 export default {
   name: "toolBar",
   data() {
@@ -129,7 +129,7 @@ export default {
       imgList: []
     };
   },
-  components: {poper},
+  components: { poper },
   mounted() {
     let input = this.$refs.imgUpload;
     let self = this;
@@ -177,8 +177,11 @@ export default {
     deleteImg(index) {
       this.imgList.splice(index, 1);
     },
-    control(mod){
-      this.$emit("events", "controlStep",mod);
+    control(mod) {
+      this.$emit("events", "controlStep", mod);
+    },
+    preview() {
+      this.$emit("events", "preview");
     }
   },
   model: {
@@ -197,10 +200,10 @@ export default {
   padding: 1rem;
   min-height: 80vh;
 
-  .header{
-    margin:2rem 0 1rem 0;
+  .header {
+    margin: 2rem 0 1rem 0;
     font-size: 1.3rem;
-    border-bottom: 1px solid rgba(255,255,255,0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
   }
   .tool-item {
     position: relative;
@@ -212,17 +215,23 @@ export default {
     &:hover {
       font-size: 1.25rem;
       color: rgb(159, 208, 212);
+      ::v-deep .popover {
+        .popContent {
+          opacity: 1;
+        }
+      }
     }
-   p{
-     margin-right: 1vw;
-     width:fit-content;
-   }
-   .icon{
-     transition: .3s;
-     &:hover{
-      transform: rotate(15deg);
+
+    p {
+      margin-right: 1vw;
+      width: fit-content;
     }
-   }
+    .icon {
+      transition: 0.3s;
+      &:hover {
+        transform: rotate(15deg);
+      }
+    }
   }
   #insertTool {
     justify-content: flex-start;

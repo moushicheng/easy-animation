@@ -58,9 +58,9 @@ function CreateImportCode({points, viewX, viewY}){
     background: black;
     animation: move ${maxTime/1000}s linear infinite;
   }
+||
   @keyframes move {
-
-  `
+`
   for (const item of result) {
      let time=item.time.valueOf();
      let data=item.data;

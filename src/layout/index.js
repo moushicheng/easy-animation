@@ -1,4 +1,5 @@
 
 import  toolBar from '@/layout/toolBar'
 import  trackBlock from '@/layout/trackBlock'
-export default {toolBar,trackBlock}
+import  window from '@/layout/reviewWindow'
+export default {toolBar,trackBlock,window}

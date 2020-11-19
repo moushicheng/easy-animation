@@ -33,6 +33,11 @@
         ></a>
       </div>
     </div>
+    <window
+      v-if="isReview"
+      :cssCode="cssCode"
+      :canvas="this.$refs.canvas"
+    ></window>
   </div>
 </template>
 
@@ -58,7 +63,9 @@ export default {
       target: 0,
       image: null,
       layer: 1, //1绘图层 0图片层
-      imgList: null
+      imgList: null,
+      isReview: false,
+      cssCode: null
     };
   },
   computed: {
@@ -75,7 +82,7 @@ export default {
       } else {
         return `z-index:10`;
       }
-    }
+    },
   },
   methods: {
     draw: function(command) {
@@ -96,23 +103,12 @@ export default {
     changeFrame: function(item) {
       this.points[item.order].time = item.time;
     },
-    //导出代码
+
     importCode: function() {
-      let cache = [];
-      for (const item of this.points) {
-        //去除最后一个点，因为它实际上是废的
-        cache.push(item.data.pop());
-      }
-      this.points = this.points.sort((a, b) => {
-        return a.time - b.time;
-      });
-      this.points = pointShake(this.points);
-      CreateImportCode({
-        points: this.points,
-        viewX: this.resolution[0],
-        viewY: this.resolution[1]
-      })
+      //导出代码
+      this.createCode()
         .then(res => {
+          res=res.replace('||','')
           this.$alert(res, "SUCCESS", {
             confirmButtonText: "确定"
           });
@@ -121,10 +117,28 @@ export default {
           this.$alert(err, "ERROR", {
             confirmButtonText: "确定"
           });
-          for (let index in this.points) {
-            if(cache[index])this.points[index].data.push(cache[index]);
-          }
         });
+    },
+    createCode: function() {
+      //创建导出代码
+      let cache = [];
+      for (const item of this.points) {
+        //去除最后一个点，因为它实际上是废的,clip-path不需要闭合点坐标
+        cache.push(item.data.pop());
+      }
+      this.points = this.points.sort((a, b) => {
+        return a.time - b.time;
+      });
+      this.points = pointShake(this.points);
+      let result = CreateImportCode({
+        points: this.points,
+        viewX: this.resolution[0],
+        viewY: this.resolution[1]
+      });
+      for (let index in this.points) {
+        if (cache[index]) this.points[index].data.push(cache[index]);
+      }
+      return result;
     },
     insert: function(imgList) {
       this.imgList = imgList;
@@ -158,6 +172,19 @@ export default {
       }
       this.draw();
     },
+    preview: function() {
+      if(this.isReview){this.isReview=false;return}
+      this.createCode()
+        .then(res => {
+          this.cssCode = res;
+          this.isReview=true;
+        })
+        .catch(err => {
+          this.$alert(err, "ERROR", {
+            confirmButtonText: "确定"
+          });
+        });
+    },
     toolEvent: function(EventName, ...args) {
       let eventManger = {
         run: function() {
@@ -166,7 +193,8 @@ export default {
         importCode: this.importCode,
         insert: this.insert,
         choiceLayout: this.choiceLayer,
-        controlStep: this.controlStep
+        controlStep: this.controlStep,
+        preview: this.preview
       };
       eventManger.run();
     }
@@ -180,18 +208,19 @@ export default {
       "click",
       function(e) {
         if (self.layer == 0 || e.target.className == "img-item") return; //图片层则不绘画||防误触
-        self.points[self.target].cache = []; //下笔时清空点缓存区数据
+        let p = self.points[self.target];
+        p.cache = []; //下笔时清空点缓存区数据
         //绘画函数
-        if (self.points[self.target].finish == true) return; //如果完成了则直接结束
+        if (p.finish == true) return; //如果完成了则直接结束
         let command = null; //设置绘画命令
         //获取鼠标坐标点
         let x = e.offsetX;
         let y = e.offsetY;
         let target = self.target;
 
-        self.points[target].data.push(x + "," + y); //记录点坐标
+        p.data.push(x + "," + y); //记录点坐标
 
-        if (self.points[target].data.length == 1) {
+        if (p.data.length == 1) {
           //起始点命令
           command = "initial";
           originX = x;
@@ -207,7 +236,7 @@ export default {
         }
         self.draw(command); //开始绘制
         if (command == "close") {
-          self.points[self.target].finish = true;
+          p.finish = true;
         }
       },
       true
@@ -252,7 +281,8 @@ export default {
   },
   components: {
     toolBar: Layout.toolBar,
-    trackBlock: Layout.trackBlock
+    trackBlock: Layout.trackBlock,
+    window: Layout.window
   }
 };
 </script>

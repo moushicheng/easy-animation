@@ -24,7 +24,7 @@ let cm = { //commandManger
       ctx.clearRect(0, 0, _dom.width, _dom.height);
     },
     choiceLineColor(index,target){
-      if(index!=target)ctx.strokeStyle='rgba(0,0,0,0.5)'
+      if(index!=target)ctx.strokeStyle='rgba(0,0,0,0.4)'
       else ctx.strokeStyle='rgba(0,0,0)'
     }
   }

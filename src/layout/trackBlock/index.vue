@@ -33,7 +33,7 @@
       <div id="plusBtn" @click="addFrame">+</div>
     </div>
 
-    <el-dialog title="[ADD]new frame" :visible.sync="dialogVisible" width="30%">
+    <el-dialog :title="formData.type" :visible.sync="dialogVisible" width="30%">
       <form ref="addForm" id="addForm">
         <div class="form-item">
           <p class="form-item-head">Set Time</p>
@@ -121,7 +121,7 @@ export default {
   methods: {
     addFrame: function (done) {
       //添加新帧
-      this.formData.type = "add";
+      this.formData.type = "ADD[new Frame]";
       this.dialogVisible = true;
     },
     //表单提交
@@ -137,7 +137,7 @@ export default {
       )
         return;
       let allTime = new Date(min * 60 * 1000 + second * 1000 + ms * 1);
-      if (this.formData.type == "add") {
+      if (this.formData.type == "ADD[new Frame]") {
         this.timeData.push({
           order: this.timeData.length,
           time: allTime,
@@ -146,11 +146,11 @@ export default {
         this.$emit("frameDelivery", allTime.valueOf());
         this.$emit("choiceTarget", this.timeData.length - 1);
         this.target = this.timeData.length - 1;
-      } else if (this.formData.type == "change") {
+      } else if (this.formData.type == "[Change]Frame") {
         this.timeData[this.target].time = allTime;
         this.$emit("changeFrame", { order: this.target, time: allTime });
         this.$emit("choiceTarget", this.target);
-      } else if (this.formData.type == "changeMaxTime") {
+      } else if (this.formData.type == "[Change]MaxTime") {
         this.maxTime = allTime;
         this.reDrawTrack();
       }
@@ -178,7 +178,7 @@ export default {
       //重设单独帧的数据
       this.dialogVisible = true;
       this.target = item.order;
-      this.formData.type = "change";
+      this.formData.type = "[Change]Frame";
       let time = item.time;
       this.formData.minute = time.getMinutes();
       this.formData.second = time.getSeconds();
@@ -199,7 +199,7 @@ export default {
       }
     },
     adjustMaxTime: function () {
-      this.formData.type = "changeMaxTime";
+      this.formData.type = "[Change]MaxTime";
       this.dialogVisible = true;
     },
     onDrag: function (order) {
