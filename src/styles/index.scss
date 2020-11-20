@@ -1,11 +1,12 @@
-@import './page.scss';
+@import "./page.scss";
+
 body {
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB,
     Microsoft YaHei, Arial, sans-serif;
-  color:rgb(255, 255, 255)
+  color: rgb(255, 255, 255);
 }
 
 label {
@@ -21,8 +22,8 @@ html {
 *:before,
 *:after {
   box-sizing: inherit;
-  margin:0;
-  padding:0;
+  margin: 0;
+  padding: 0;
 }
 
 a:focus,
@@ -41,7 +42,36 @@ a:hover {
 div:focus {
   outline: none;
 }
-input{  
-	outline:none;  
-	border:1px solid white;
+input {
+  outline: none;
+  border: 1px solid white;
 }
+::-webkit-scrollbar {
+	/*滚动条整体样式*/
+	width: 5px;
+	/*高宽分别对应横竖滚动条的尺寸*/
+	height: 5px;
+}
+::-webkit-scrollbar-thumb {
+	/*滚动条里面小方块*/
+	border-radius: 5px;
+	-webkit-box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.63);
+	background: rgba(255, 255, 255, 0.2);
+}
+ 
+::-webkit-scrollbar-track {
+	/*滚动条里面轨道*/
+	-webkit-box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.514);
+	border-radius: 0;
+	background: rgba(255, 255, 255, 0.1);
+}
+
+.el-message-box{
+  p{
+    white-space:pre-wrap;
+  }
+
+}
+
+
+@import "./media.scss";

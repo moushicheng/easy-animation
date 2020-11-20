@@ -8,13 +8,17 @@
 // @ is an alias to /src
 export default {
   name: 'index',
-  components: {
-
-  }
 }
 </script>
 
 <style lang="scss" scoped>
 @import "@/styles/index.scss";
-
+.index{
+  height:100vh;
+  width:100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+}
 </style>
