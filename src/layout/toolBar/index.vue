@@ -143,7 +143,7 @@ export default {
             url: reader.result,
             name: file.name.slice(-10)
           });
-          self.$emit("events", "insert", self.imgList); //似乎没有意义
+          self.$emit("events", "insert", self.imgList);
         },
         false
       );

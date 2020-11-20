@@ -31,7 +31,9 @@
         >
       </div>
       <div id="plusBtn" @click="addFrame">+</div>
+
     </div>
+
 
     <el-dialog :title="formData.type" :visible.sync="dialogVisible" width="30%">
       <form ref="addForm" id="addForm">
