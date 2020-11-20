@@ -44,7 +44,7 @@
 <script>
 import Layout from "@/layout/index";
 import drawTools from "@/utils/draw.js";
-import { CreateImportCode, pointShake } from "@/utils/index.js";
+import { CreateImportCode, pointShake, sayManger } from "@/utils/index.js";
 
 export default {
   name: "",
@@ -60,7 +60,19 @@ export default {
           finish: false
         }
       ],
+      // tracksData: [
+      //   [
+      //     {
+      //       order: 0,
+      //       time: new Date(0),
+      //       data: [],
+      //       cache: [],
+      //       finish: false
+      //     }
+      //   ]
+      // ],
       target: 0,
+      // trackTarget:0,
       image: null,
       layer: 1, //1绘图层 0图片层
       imgList: null,
@@ -82,7 +94,7 @@ export default {
       } else {
         return `z-index:10`;
       }
-    },
+    }
   },
   methods: {
     draw: function(command) {
@@ -108,7 +120,7 @@ export default {
       //导出代码
       this.createCode()
         .then(res => {
-          res=res.replace('||','')
+          res = res.replace("||", "");
           this.$alert(res, "SUCCESS", {
             confirmButtonText: "确定"
           });
@@ -167,17 +179,21 @@ export default {
           if (Math.abs(o[0] - c[0]) < 6 && Math.abs(o[1] - c[1]) < 6) {
             //前进点是最终点，则确定完成状态
             p.finish = true;
+            sayManger.saySuccess.call(this);
           }
         }
       }
       this.draw();
     },
     preview: function() {
-      if(this.isReview){this.isReview=false;return}
+      if (this.isReview) {
+        this.isReview = false;
+        return;
+      }
       this.createCode()
         .then(res => {
           this.cssCode = res;
-          this.isReview=true;
+          this.isReview = true;
         })
         .catch(err => {
           this.$alert(err, "ERROR", {
@@ -202,13 +218,14 @@ export default {
   mounted() {
     let c = this.$refs.canvas;
     let self = this;
-    let originX = null;
-    let originY = null;
+
     c.addEventListener(
       "click",
       function(e) {
         if (self.layer == 0 || e.target.className == "img-item") return; //图片层则不绘画||防误触
-        let p = self.points[self.target];
+
+        let target = self.target;
+        let p = self.points[target]; //当前帧目标数据
         p.cache = []; //下笔时清空点缓存区数据
         //绘画函数
         if (p.finish == true) return; //如果完成了则直接结束
@@ -216,23 +233,17 @@ export default {
         //获取鼠标坐标点
         let x = e.offsetX;
         let y = e.offsetY;
-        let target = self.target;
-
         p.data.push(x + "," + y); //记录点坐标
-
+        //获取起始点坐标
+        let originX = p.data[0].split(",")[0];
+        let originY = p.data[0].split(",")[1];
         if (p.data.length == 1) {
           //起始点命令
           command = "initial";
-          originX = x;
-          originY = y;
         } else if (Math.abs(originX - x) < 6 && Math.abs(originY - y) < 6) {
           //如果点到起始点，则闭合图形
           command = "close";
-          self.$notify({
-            title: "FINISH",
-            message: "完成一帧画面的绘制",
-            type: "success"
-          });
+          sayManger.saySuccess.call(self);
         }
         self.draw(command); //开始绘制
         if (command == "close") {

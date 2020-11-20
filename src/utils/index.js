@@ -132,4 +132,13 @@ function check(points){
   return true;
 }
 
-export {formatTime,CreateImportCode,pointShake};
+let sayManger={
+  saySuccess:function(){
+    this.$notify({
+      title: "FINISH",
+      message: "完成一帧画面的绘制",
+      type: "success"
+    });
+  }
+}
+export {formatTime,CreateImportCode,pointShake,sayManger};
