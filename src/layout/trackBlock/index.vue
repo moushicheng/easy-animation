@@ -14,24 +14,23 @@
       </div>
     </div>
     <div id="frameTrack">
-      <p id="frameTarget">cur:{{target}}</p>
+      <p id="frameTarget">cur:{{curTarget}}</p>
       <div id="frameContainer" ref='frameContainer'>
         <frame
-        v-for="item in timeData"
+        v-for="item in curTrack"
         :key="item.index"
         :content="item.order"
         :popContent=" formatTime(item.time)"
         class="frame"
         ref="frame"
-        @click=" onFrameClick(item.order)"
-        @delete='deleteData(item.order)'
-        @adjust='adjustData(item)'
+        @click="onFrameClick(item.order)"
+        @delete="deleteFrame(item.order)"
+        @adjust="adjustFrame(item)"
         @drag="onDrag(item.order)"
         @mousedown.native="onDrag(item.order)"
         >
       </div>
       <div id="plusBtn" @click="addFrame">+</div>
-
     </div>
 
 
@@ -58,18 +57,30 @@
 <script>
 import { verify } from "@/utils/form.js";
 import { formatTime } from "@/utils/index.js";
-import {frame} from "@/components/index.js";
+import { frame } from "@/components/index.js";
 
 export default {
   name: "trackBlock",
   data() {
     return {
-      timeData: [
-        {
-          order: 0,
-          time: new Date(0),
-        },
+      tracksData: [
+        [
+          //curTrack
+          {
+            //curData
+            order: 0,
+            time: new Date(0),
+          },
+        ],
+        // [
+        //   {
+        //     order: 0,
+        //     time: new Date(0),
+        //   },
+        // ],
       ],
+      targets: [0], //curTarget
+      trackTarget: 0,
       formData: {
         minute: 0,
         second: 0,
@@ -90,9 +101,20 @@ export default {
       frameX: null,
     };
   },
-  components: { frame },
+  computed: {
+    curData: function () {
+      return this.curTrack[this.curTarget];
+    },
+    curTarget: function () {
+      return this.targets[this.trackTarget];
+    },
+    curTrack: function () {
+      //->timeData
+      return this.tracksData[this.trackTarget];
+    },
+  },
   watch: {
-    timeData: {
+    curTrack: {
       handler: function () {
         //使帧对其时间轨,根据f(时间/总时间) -> f(位置)
         setTimeout(() => {
@@ -106,8 +128,7 @@ export default {
 
           for (const index in frames) {
             const frame = frames[index].$el;
-            const data = this.timeData[index];
-
+            const data = this.curTrack[index];
             let ratio = (data.time * 1) / (this.maxTime * 1); //粗调
             let offset = -b * ratio + "px"; //细调,消除偏移量
             ratio = ratio * 100 + "%";
@@ -126,43 +147,62 @@ export default {
       this.formData.type = "ADD[new Frame]";
       this.dialogVisible = true;
     },
-    //表单提交
-    submitForm: function () {
-      this.dialogVisible = false;
-      let min = this.formData.minute;
-      let second = this.formData.second;
-      let ms = this.formData.millisecond;
-      if (
-        !verify(min, "range", "0,60", this.onVerifyErrot) ||
-        !verify(second, "range", "0,60", this.onVerifyErrot) ||
-        !verify(ms, "range", "0,1000", this.onVerifyErrot)
-      )
-        return;
-      let allTime = new Date(min * 60 * 1000 + second * 1000 + ms * 1);
-      if (this.formData.type == "ADD[new Frame]") {
-        this.timeData.push({
-          order: this.timeData.length,
-          time: allTime,
-        });
-        //传递新帧给主页面
-        this.$emit("frameDelivery", allTime.valueOf());
-        this.$emit("choiceTarget", this.timeData.length - 1);
-        this.target = this.timeData.length - 1;
-      } else if (this.formData.type == "[Change]Frame") {
-        this.timeData[this.target].time = allTime;
-        this.$emit("changeFrame", { order: this.target, time: allTime });
-        this.$emit("choiceTarget", this.target);
-      } else if (this.formData.type == "[Change]MaxTime") {
-        this.maxTime = allTime;
-        this.reDrawTrack();
-      }
-      if (this.maxTime <= allTime) {
-        this.maxTime = allTime;
-      }
+    adjustFrame: function (item) {
+      //重设单独帧的数据
+       let time = item.time;
+       let order= time.order
+      this.formData.type = "[Change]Frame";
+      this.dialogVisible = true;
+      this.setTarget(order);
+      this.formData.minute = time.getMinutes();
+      this.formData.second = time.getSeconds();
+      this.formData.millisecond = time.getMilliseconds();
     },
-    onVerifyErrot: function (message) {
-      //检测表单
-      this.$message({ message, type: "warning" });
+    deleteFrame: function (order) {
+      this.curTrack.splice(order, 1);
+      this.reDrawFrame();
+    },
+    adjustMaxTime: function () {
+      this.formData.type = "[Change]MaxTime";
+      this.dialogVisible = true;
+    },
+    onFrameClick: function (order) {
+      this.$emit("choiceTarget", order);
+      this.setTarget(order)
+    },
+    onDrag: function (order) { //鼠标拖动帧执行的逻辑
+      let frame = this.$refs.frame[order].$el;
+      let container = this.$refs.frameContainer;
+      let b = this.$refs.timeItem.clientWidth;
+      let self = this;
+      let pop = frame.children[1];
+
+      let x = container.offsetLeft + 16; //1rem=16
+      document.onmousemove = function (e) {
+        let ratio = (e.pageX - x) / (container.clientWidth - b);
+        if (ratio <= 0) ratio = 0;
+        if (ratio > 1) ratio = 1;
+        self.curTrack[order].time = new Date(self.maxTime * ratio);
+
+        //对hover框进行操作，触底反弹,和上面的帧拖动逻辑无关,但不需要解耦（目测日后不需要维护hh
+        let popLeft = pop.getBoundingClientRect().left + pop.clientWidth;
+        let ww = window.innerWidth;
+        if (popLeft >= ww - 150)
+          pop.style.transform = `translateX(-${popLeft - ww + 50}px)`;
+        else {
+          pop.style.transform = null;
+        }
+      };
+      document.onmouseup = function () {
+        //清除盒子的移动事件;
+        document.onmousemove = null;
+      };
+    },
+    reDrawFrame: function () {
+      let count = 0;
+      for (const item of this.curTrack) {
+        item.order = count++;
+      }
     },
     reDrawTrack: function () {
       //重绘轨道时间轴
@@ -174,73 +214,57 @@ export default {
       }
       result.push(this.formatTime(maxT));
       this.timeLineData = result;
-      this.timeLineData.push(); //强制更新
     },
-    adjustData: function (item) {
-      //重设单独帧的数据
-      this.dialogVisible = true;
-      this.target = item.order;
-      this.formData.type = "[Change]Frame";
-      let time = item.time;
-      this.formData.minute = time.getMinutes();
-      this.formData.second = time.getSeconds();
-      this.formData.millisecond = time.getMilliseconds();
-    },
-    deleteData: function (order) {
-      this.timeData.splice(order, 1);
-      this.reDrawFrame();
-    },
-    onFrameClick: function (order) {
-      this.$emit("choiceTarget", order);
-      this.target = order;
-    },
-    reDrawFrame: function () {
-      let count = 0;
-      for (const item of this.timeData) {
-        item.order = count++;
+    //表单提交
+    submitForm: function () {
+      this.dialogVisible = false;
+
+      //对表单值进行效验
+      let min = this.formData.minute;
+      let second = this.formData.second;
+      let ms = this.formData.millisecond;
+      if (!verify(min, "range", "0,60") ||!verify(second, "range", "0,60") ||!verify(ms, "range", "0,1000"))return;
+      let curTime = new Date(min * 60 * 1000 + second * 1000 + ms * 1);
+
+      switch (this.formData.type) {
+        case "ADD[new Frame]": {
+          this.curTrack.push({
+            order: this.curTrack.length,
+            time: curTime,
+          });
+          //传递新帧给主页面
+          this.$emit("frameDelivery", curTime.valueOf());
+          this.$emit("choiceTarget", this.curTrack.length - 1);
+          this.$set(this.targets, this.curTarget, this.curTrack.length - 1);
+          break;
+        }
+        case "[Change]Frame": {
+          this.curData.time = curTime;
+          this.$emit("changeFrame", { order: this.curTarget, time: curTime });
+          this.$emit("choiceTarget", this.curTarget);
+          break;
+        }
+        case "[Change]MaxTime": {
+          this.maxTime = curTime;
+          this.reDrawTrack();
+        }
       }
+      if (this.maxTime <= curTime) this.maxTime = curTime;
     },
-    adjustMaxTime: function () {
-      this.formData.type = "[Change]MaxTime";
-      this.dialogVisible = true;
-    },
-    onDrag: function (order) {
-        let frame = this.$refs.frame[order].$el;
-        let container = this.$refs.frameContainer;
-        let b = this.$refs.timeItem.clientWidth;
-        let self = this;
-        let pop = frame.children[1];
 
-        let x = container.offsetLeft+16; //1rem=16
-        document.onmousemove = function (e) {
-          let ratio = (e.pageX - x) / (container.clientWidth - b);
-          if (ratio <= 0) ratio = 0;
-          if (ratio > 1) ratio = 1;
-          self.timeData[order].time = new Date(self.maxTime * ratio);
-
-          //对hover框进行操作，触底反弹,和上面的帧拖动逻辑无关,但不需要解耦（目测日后不需要维护hh
-          let popLeft = pop.getBoundingClientRect().left + pop.clientWidth;
-          let ww = window.innerWidth;
-          if (popLeft >= ww - 150)
-            pop.style.transform = `translateX(-${popLeft - ww + 50}px)`;
-          else {
-            pop.style.transform = null;
-          }
-        };
-        document.onmouseup = function () {
-          //清除盒子的移动事件;
-          document.onmousemove = null;
-        };
+    setTarget(index){
+      this.$set(this.targets,this.trackTarget,index);
     },
     formatTime, //格式化时间
   },
+  components: { frame },
 };
 </script>
 
 <style lang="scss" scoped>
 #trackBlock {
   margin-top: 1rem;
-  width:100%;
+  width: 100%;
   #timeLine {
     display: flex;
     p {

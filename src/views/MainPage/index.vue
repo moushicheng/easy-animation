@@ -65,15 +65,15 @@ export default {
             finish: false
           }
         ],
-        [
-          {
-            order: 0,
-            time: new Date(0),
-            data: [],
-            cache: [],
-            finish: false
-          }
-        ]
+        // [
+        //   {
+        //     order: 0,
+        //     time: new Date(0),
+        //     data: [],
+        //     cache: [],
+        //     finish: false
+        //   }
+        // ]
       ],
       targets: [0],
       trackTarget: 0,
