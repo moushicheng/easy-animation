@@ -4,18 +4,20 @@
 
     <div id="timeLine">
       <p>TimeLine</p>
-      <div id="timeContainer" ref="timeContainer" >
-        <div class="time-item" ref="timeItem">{{timeLineData[0]}}</div>
-        <div class="time-item">{{timeLineData[1]}}</div>
-        <div class="time-item">{{timeLineData[2]}}</div>
-        <div class="time-item">{{timeLineData[3]}}</div>
-        <div class="time-item">{{timeLineData[4]}}</div>
-        <div class="time-item" @click="adjustMaxTime" >{{timeLineData[5]}}</div>
+      <div id="timeContainer" ref="timeContainer">
+        <div class="time-item" ref="timeItem">{{ timeLineData[0] }}</div>
+        <div class="time-item">{{ timeLineData[1] }}</div>
+        <div class="time-item">{{ timeLineData[2] }}</div>
+        <div class="time-item">{{ timeLineData[3] }}</div>
+        <div class="time-item">{{ timeLineData[4] }}</div>
+        <div class="time-item" @click="adjustMaxTime">
+          {{ timeLineData[5] }}
+        </div>
       </div>
     </div>
-    <div id="frameTrack">
-      <p id="frameTarget">cur:{{curTarget}}</p>
-      <div id="frameContainer" ref='frameContainer'>
+    <!-- <div class="frameTrack" @click='choiceTrack(0)'>
+      <p class="frameTarget">cur:{{curTarget}}</p>
+      <div class="frameContainer" ref='frameContainer'>
         <frame
         v-for="item in curTrack"
         :key="item.index"
@@ -30,10 +32,13 @@
         @mousedown.native="onDrag(item.order)"
         >
       </div>
-      <div id="plusBtn" @click="addFrame">+</div>
-    </div>
+      <div class="plusBtn" @click="addFrame" :trackIndex="1">+</div>
+    </div> -->
 
-
+    <!-- frame-track的整体思路应该是内部存储一份数据，所有增删改查操作在内部执行，每个动作做完之后向父组件trackBlock发送改变命令，强制改变帧数据 -->
+    <frame-track @click.native="choiceTrack(1)" ref="frameTrack"></frame-track>
+    <frame-track @click.native="choiceTrack(2)"></frame-track>
+    {{ trackTarget }}
     <el-dialog :title="formData.type" :visible.sync="dialogVisible" width="30%">
       <form ref="addForm" id="addForm">
         <div class="form-item">
@@ -42,7 +47,12 @@
           <span id="timeMiddle">:</span>
           <input type="number" max="60" min="0" v-model="formData.second" />
           <span id="timeMiddle">.</span>
-          <input type="number" max="1000" min="0" v-model="formData.millisecond" />
+          <input
+            type="number"
+            max="1000"
+            min="0"
+            v-model="formData.millisecond"
+          />
         </div>
       </form>
       <span slot="footer" class="dialog-footer">
@@ -50,7 +60,6 @@
         <el-button @click="dialogVisible = false">cancel</el-button>
       </span>
     </el-dialog>
-
   </div>
 </template>
 
@@ -58,7 +67,7 @@
 import { verify } from "@/utils/form.js";
 import { formatTime } from "@/utils/index.js";
 import { frame } from "@/components/index.js";
-
+import frameTrack from "./components/frameTrack";
 export default {
   name: "trackBlock",
   data() {
@@ -69,9 +78,9 @@ export default {
           {
             //curData
             order: 0,
-            time: new Date(0),
-          },
-        ],
+            time: new Date(0)
+          }
+        ]
         // [
         //   {
         //     order: 0,
@@ -80,12 +89,11 @@ export default {
         // ],
       ],
       targets: [0], //curTarget
-      trackTarget: 0,
       formData: {
         minute: 0,
         second: 0,
         millisecond: 0,
-        type: null,
+        type: null
       },
       dialogVisible: false,
       maxTime: new Date(2500),
@@ -95,27 +103,30 @@ export default {
         '00:01.000"',
         '00:01.500"',
         '00:02.000"',
-        '00:02.500"',
+        '00:02.500"'
       ],
       target: 0,
-      frameX: null,
+      frameX: null
     };
   },
   computed: {
-    curData: function () {
+    curData: function() {
       return this.curTrack[this.curTarget];
     },
-    curTarget: function () {
+    curTarget: function() {
       return this.targets[this.trackTarget];
     },
-    curTrack: function () {
+    curTrack: function() {
       //->timeData
       return this.tracksData[this.trackTarget];
     },
+    trackTarget: function() {
+      return this.$store.trackTarget;
+    }
   },
   watch: {
     curTrack: {
-      handler: function () {
+      handler: function() {
         //使帧对其时间轨,根据f(时间/总时间) -> f(位置)
         setTimeout(() => {
           //重绘时间轨
@@ -137,20 +148,19 @@ export default {
           }
         });
       },
-      deep: true,
-    },
+      deep: true
+    }
   },
-
   methods: {
-    addFrame: function (done) {
+    addFrame: function(done) {
       //添加新帧
       this.formData.type = "ADD[new Frame]";
       this.dialogVisible = true;
     },
-    adjustFrame: function (item) {
+    adjustFrame: function(item) {
       //重设单独帧的数据
-       let time = item.time;
-       let order= time.order
+      let time = item.time;
+      let order = time.order;
       this.formData.type = "[Change]Frame";
       this.dialogVisible = true;
       this.setTarget(order);
@@ -158,19 +168,19 @@ export default {
       this.formData.second = time.getSeconds();
       this.formData.millisecond = time.getMilliseconds();
     },
-    deleteFrame: function (order) {
+    deleteFrame: function(order) {
       this.curTrack.splice(order, 1);
       this.reDrawFrame();
     },
-    adjustMaxTime: function () {
+    adjustMaxTime: function() {
       this.formData.type = "[Change]MaxTime";
       this.dialogVisible = true;
     },
-    onFrameClick: function (order) {
+    onFrameClick: function(order) {
       this.$emit("choiceTarget", order);
-      this.setTarget(order)
     },
-    onDrag: function (order) { //鼠标拖动帧执行的逻辑
+    onDrag: function(order) {
+      //鼠标拖动帧执行的逻辑
       let frame = this.$refs.frame[order].$el;
       let container = this.$refs.frameContainer;
       let b = this.$refs.timeItem.clientWidth;
@@ -178,7 +188,7 @@ export default {
       let pop = frame.children[1];
 
       let x = container.offsetLeft + 16; //1rem=16
-      document.onmousemove = function (e) {
+      document.onmousemove = function(e) {
         let ratio = (e.pageX - x) / (container.clientWidth - b);
         if (ratio <= 0) ratio = 0;
         if (ratio > 1) ratio = 1;
@@ -193,18 +203,21 @@ export default {
           pop.style.transform = null;
         }
       };
-      document.onmouseup = function () {
+      document.onmouseup = function() {
         //清除盒子的移动事件;
         document.onmousemove = null;
       };
     },
-    reDrawFrame: function () {
+    choiceTrack: function(index) {
+      this.trackTarget = index;
+    },
+    reDrawFrame: function() {
       let count = 0;
       for (const item of this.curTrack) {
         item.order = count++;
       }
     },
-    reDrawTrack: function () {
+    reDrawTrack: function() {
       //重绘轨道时间轴
       let maxT = this.maxTime;
       let t = this.maxTime / 5;
@@ -216,21 +229,26 @@ export default {
       this.timeLineData = result;
     },
     //表单提交
-    submitForm: function () {
+    submitForm: function() {
       this.dialogVisible = false;
 
       //对表单值进行效验
       let min = this.formData.minute;
       let second = this.formData.second;
       let ms = this.formData.millisecond;
-      if (!verify(min, "range", "0,60") ||!verify(second, "range", "0,60") ||!verify(ms, "range", "0,1000"))return;
+      if (
+        !verify(min, "range", "0,60") ||
+        !verify(second, "range", "0,60") ||
+        !verify(ms, "range", "0,1000")
+      )
+        return;
       let curTime = new Date(min * 60 * 1000 + second * 1000 + ms * 1);
 
       switch (this.formData.type) {
         case "ADD[new Frame]": {
           this.curTrack.push({
             order: this.curTrack.length,
-            time: curTime,
+            time: curTime
           });
           //传递新帧给主页面
           this.$emit("frameDelivery", curTime.valueOf());
@@ -252,12 +270,12 @@ export default {
       if (this.maxTime <= curTime) this.maxTime = curTime;
     },
 
-    setTarget(index){
-      this.$set(this.targets,this.trackTarget,index);
+    setTarget(index) {
+      this.$set(this.targets, this.trackTarget, index);
     },
-    formatTime, //格式化时间
+    formatTime //格式化时间
   },
-  components: { frame },
+  components: { frame, frameTrack }
 };
 </script>
 
@@ -291,15 +309,15 @@ export default {
       }
     }
   }
-  #frameTrack {
-    #frameTarget {
+  .frameTrack {
+    .frameTarget {
       margin-left: 2rem;
       width: 4rem;
     }
     margin-top: 0.5rem;
     display: flex;
     align-items: center;
-    #frameContainer {
+    .frameContainer {
       height: 1rem;
       border-top: 1px solid rgba(255, 255, 255, 0.5);
       border-bottom: 1px solid rgba(255, 255, 255, 0.5);
@@ -314,7 +332,7 @@ export default {
         transform: translateX(var(--y));
       }
     }
-    #plusBtn {
+    .plusBtn {
       font-size: 1rem;
       font-weight: 900;
       color: white;

@@ -76,8 +76,6 @@ export default {
         // ]
       ],
       targets: [0],
-      trackTarget: 0,
-
       image: null,
       layer: 1, //1绘图层 0图片层
       imgList: null,
@@ -99,6 +97,9 @@ export default {
       } else {
         return `z-index:10`;
       }
+    },
+    trackTarget:function(){
+      return this.$store.trackTarget
     },
     curData:function(){
       return this.curPoints[this.curTarget]
