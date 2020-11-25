@@ -27,7 +27,7 @@ let store=new Vuex.Store({
       ]
     ],
     trackTarget: 0,
-    targets: [0]
+    targets: [0,0]
   },
   mutations: {
     choiceTrack(state, v) {
@@ -35,20 +35,21 @@ let store=new Vuex.Store({
     },
     choiceTarget(state,v){
       state.targets[state.trackTarget]=v;
+      state.targets.push(); //强制更新，否则curTarget会不更新!
     },
-    adjustFrame(state,item){
-      store.getters.curTrack[item.order]=item.time
+    adjustFrame(state,time){
+      store.getters.curData.time=time;
     },
     addFrame(state,item){
       let track=store.getters.curTrack;
       track.push(item);
-    }
+    },
   },
   getters:{
     curData:function(state,getters){ //当前选中帧中的当前帧数据
       return getters.curTrack[getters.curTarget]
     },
-    curTarget:function(state){ //当前选中帧中的当前帧下标
+    curTarget:function(state,getters){ //当前选中帧中的当前帧下标
       return state.targets[state.trackTarget];
     },
     curTrack:function(state){ //当前选中的时间轨数据
@@ -57,9 +58,6 @@ let store=new Vuex.Store({
     trackTotal:function(state){
       return state.tracksData.length;
     },
-    getTrack:function(index){
-      return state.tracksData[index];
-    }
   }
 });
 export default store

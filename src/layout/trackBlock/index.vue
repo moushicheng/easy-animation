@@ -136,11 +136,6 @@ export default {
     ...mapMutations([
       'choiceTrack'
     ]),
-    addFrame: function(done) {
-      //添加新帧
-      this.formData.type = "ADD[new Frame]";
-      this.dialogVisible = true;
-    },
     adjustFrame: function(item) {
       //重设单独帧的数据
       let time = item.time;

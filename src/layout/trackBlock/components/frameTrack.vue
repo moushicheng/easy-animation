@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2020-11-20 21:07:16
- * @LastEditTime: 2020-11-25 09:29:36
+ * @LastEditTime: 2020-11-25 19:05:16
  * @LastEditors: your name
  * @Description:
  * @FilePath: \easy_animate\src\layout\trackBlock\components\frameTrack.vue
@@ -19,13 +19,14 @@
         class="frame"
         ref="frame"
         @click="onFrameClick(item.order)"
+        @adjust="adjust(item)"
         >
    <!-- @delete="deleteFrame(item.order)"
         @adjust="adjustFrame(item)"
         @drag="onDrag(item.order)"
         @mousedown.native="onDrag(item.order)" -->
       </div>
-      <div class="plusBtn"  @click="addFrame">+</div>
+      <div class="plusBtn"  @click="add">+</div>
 
       <el-dialog :title="formData.type" :visible.sync="dialogVisible" width="30%">
       <form ref="addForm" id="addForm">
@@ -50,73 +51,79 @@
 <script>
 import { formatTime } from "@/utils/index.js";
 import { frame } from "@/components/index.js";
-import { verify } from "@/utils/form.js";
-import { mapState,mapGetters,mapMutations} from 'vuex'
+import { verify, getCurTime } from "@/utils/form.js";
+import { mapState, mapGetters, mapMutations } from "vuex";
 export default {
   name: "",
   data() {
     return {
-      target:0,
       formData: {
         minute: 0,
         second: 0,
         millisecond: 0,
         type: null,
       },
+      data: null,
+      target: null,
       dialogVisible: false,
+      curTrack: null,
     };
   },
   components: { frame },
-  computed:{
-   ...mapState([
-      'tracksData',
-      'trackTarget',
-      'targets'
-    ]),
-    ...mapGetters([
-      'curData',
-      'curTarget',
-      'curTrack'
-    ]),
+  computed: {
+    ...mapState(["tracksData", "trackTarget", "targets"]),
+    ...mapGetters(["curData"]),
+  },
+  mounted: function () {
+    this.curTrack = this.tracksData[this.trackIndex];
+    this.target = this.targets[this.trackIndex];
   },
   methods: {
     onFrameClick: function (order) {
-      this.target=order;
+      this.target = order;
     },
     formatTime,
-     addFrame: function (done) {
+    add: function (done) {
       //添加新帧
       this.formData.type = "ADD[new Frame]";
+      this.dialogVisible = true;
+    },
+    adjust: function (item) {
+      let time = item.time;
+      let order = item.order;
+      this.formData.minute = time.getMinutes();
+      this.formData.second = time.getSeconds();
+      this.formData.millisecond = time.getMilliseconds();
+      this.target = order;
+      this.formData.type = "[Adjust]Frame";
       this.dialogVisible = true;
     },
     //表单提交
     submitForm: function () {
       //对表单值进行效验
-      let min = this.formData.minute;
-      let second = this.formData.second;
-      let ms = this.formData.millisecond;
-      if (!verify(min, "range", "0,60") ||!verify(second, "range", "0,60") ||!verify(ms, "range", "0,1000"))return;
-      let curTime = new Date(min * 60 * 1000 + second * 1000 + ms * 1);
-
+      let curTime = getCurTime(this.formData);
+      if (!curTime) return;
       switch (this.formData.type) {
         case "ADD[new Frame]": {
-          // this.target=this.data.length - 1;
-          this.choiceTrack(this.trackIndex);
+          let order = this.curTrack.length;
+          this.target = order;
           this.addFrame({
-            order: this.curTrack.length,
+            order,
             time: curTime,
             data: [],
             cache: [],
-            finish: false
-          })
+            finish: false,
+          });
+
           // this.$store.commit('choiceTrack',this.data.length-1);
           // this.$parent.$emit("choiceTarget", this.data.length - 1);
           break;
         }
-        case "[Change]Frame": {
-          // this.curData.time = curTime;
+        case "[Adjust]Frame": {
+          this.adjustFrame(curTime)
           // this.$emit("changeFrame", { order: this.curTarget, time: curTime });
           // this.$emit("choiceTarget", this.curTarget);
+
           break;
         }
         case "[Change]MaxTime": {
@@ -125,17 +132,21 @@ export default {
         }
       }
       if (this.maxTime <= curTime) this.maxTime = curTime;
-        this.dialogVisible = false;
+      this.dialogVisible = false;
     },
     onVerifyErrot: function (message) {
       //检测表单
       this.$message({ message, type: "warning" });
     },
-     ...mapMutations([
-      'choiceTrack'
-    ]),
+    ...mapMutations(["choiceTrack", "addFrame", "choiceTarget","adjustFrame"]),
   },
-  props:['trackIndex'],
+  watch: {
+    target: function (val) {
+      console.log(val);
+      this.choiceTarget(val);
+    },
+  },
+  props: ["trackIndex"],
 };
 </script>
 
