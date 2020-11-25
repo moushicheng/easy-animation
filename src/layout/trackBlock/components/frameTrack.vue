@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2020-11-20 21:07:16
- * @LastEditTime: 2020-11-22 19:58:32
+ * @LastEditTime: 2020-11-25 09:29:36
  * @LastEditors: your name
  * @Description:
  * @FilePath: \easy_animate\src\layout\trackBlock\components\frameTrack.vue
@@ -12,7 +12,7 @@
       <p class="frameTarget">cur:{{target}}</p>
       <div class="frameContainer" ref='frameContainer'>
         <frame
-        v-for="item in data"
+        v-for="item in curTrack"
         :key="item.index"
         :content="item.order"
         :popContent=" formatTime(item.time)"
@@ -51,18 +51,11 @@
 import { formatTime } from "@/utils/index.js";
 import { frame } from "@/components/index.js";
 import { verify } from "@/utils/form.js";
+import { mapState,mapGetters,mapMutations} from 'vuex'
 export default {
   name: "",
   data() {
     return {
-      data: [
-        {
-          //curData
-          order: 0,
-          time: new Date(0),
-        }
-      ],
-      frames:[],
       target:0,
       formData: {
         minute: 0,
@@ -74,6 +67,18 @@ export default {
     };
   },
   components: { frame },
+  computed:{
+   ...mapState([
+      'tracksData',
+      'trackTarget',
+      'targets'
+    ]),
+    ...mapGetters([
+      'curData',
+      'curTarget',
+      'curTrack'
+    ]),
+  },
   methods: {
     onFrameClick: function (order) {
       this.target=order;
@@ -86,8 +91,6 @@ export default {
     },
     //表单提交
     submitForm: function () {
-       this.dialogVisible = false;
-
       //对表单值进行效验
       let min = this.formData.minute;
       let second = this.formData.second;
@@ -97,14 +100,16 @@ export default {
 
       switch (this.formData.type) {
         case "ADD[new Frame]": {
-          this.data.push({
-            order: this.data.length,
+          // this.target=this.data.length - 1;
+          this.choiceTrack(this.trackIndex);
+          this.addFrame({
+            order: this.curTrack.length,
             time: curTime,
-          });
-          this.target=this.data.length - 1
-          //传递新帧给主页面
-          this.$parent.$emit("frameDelivery", curTime.valueOf());
-          this.$store.commit('choiceTrack',this.data.length-1);
+            data: [],
+            cache: [],
+            finish: false
+          })
+          // this.$store.commit('choiceTrack',this.data.length-1);
           // this.$parent.$emit("choiceTarget", this.data.length - 1);
           break;
         }
@@ -120,13 +125,17 @@ export default {
         }
       }
       if (this.maxTime <= curTime) this.maxTime = curTime;
+        this.dialogVisible = false;
     },
     onVerifyErrot: function (message) {
       //检测表单
       this.$message({ message, type: "warning" });
     },
+     ...mapMutations([
+      'choiceTrack'
+    ]),
   },
-  props:['trackIndex',],
+  props:['trackIndex'],
 };
 </script>
 

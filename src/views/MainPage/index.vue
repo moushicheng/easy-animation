@@ -44,6 +44,7 @@
 <script>
 import Layout from "@/layout/index";
 import drawTools from "@/utils/draw.js";
+import { mapState,mapGetters,mapMutations} from 'vuex'
 import {
   CreateImportCode,
   pointShake,
@@ -55,27 +56,6 @@ export default {
   data() {
     return {
       resolution: [800, 400],
-      tracksData: [
-        [
-          {
-            order: 0,
-            time: new Date(0),
-            data: [],
-            cache: [],
-            finish: false
-          }
-        ],
-        // [
-        //   {
-        //     order: 0,
-        //     time: new Date(0),
-        //     data: [],
-        //     cache: [],
-        //     finish: false
-        //   }
-        // ]
-      ],
-      targets: [0],
       image: null,
       layer: 1, //1绘图层 0图片层
       imgList: null,
@@ -98,37 +78,38 @@ export default {
         return `z-index:10`;
       }
     },
-    trackTarget:function(){
-      return this.$store.trackTarget
-    },
-    curData:function(){
-      return this.curPoints[this.curTarget]
-    },
-    curTarget:function(){
-      return this.targets[this.trackTarget];
-    },
-    curPoints:function(){
-      return this.tracksData[this.trackTarget];
-    }
+    ...mapState([
+      'tracksData',
+      'trackTarget',
+      'targets'
+    ]),
+    ...mapGetters([
+      'curData',
+      'curTarget',
+      'curTrack'
+    ])
   },
   methods: {
+    ...mapMutations([
+      'adjustFrame'
+    ]),
     draw: function(command) {
-      drawTools.draw(this.curPoints, this.curTarget, this.$refs.canvas, command);
+      drawTools.draw(this.curTrack, this.curTarget, this.$refs.canvas, command);
     },
     frameDelivery: function(m) {
-      this.curPoints.push({
-        order: this.curPoints.length,
+      this.curTrack.push({
+        order: this.curTrack.length,
         time: m,
         data: [],
         finish: false
       });
     },
-    choiceTarget: function(m) {
+    choiceTarget: function(m) { //准备废弃
       this.$set(this.targets,this.trackTarget,m);
       this.draw();
     },
-    changeFrame: function(item) {
-      this.curPoints[item.order].time = item.time;
+    changeFrame: function(item) { //准备废弃
+      this.curTrack[item.order].time = item.time;
     },
 
     importCode: function() {
@@ -149,22 +130,22 @@ export default {
     createCode: function() {
       //创建导出代码
       let cache = [];
-      let curPoints=this.curPoints; //它是个引用类型的对象
-      for (const item of curPoints) {
+      let curTrack=this.curTrack; //它是个引用类型的对象
+      for (const item of curTrack) {
         //去除最后一个点，因为它实际上是废的,clip-path不需要闭合点坐标
         cache.push(item.data.pop());
       }
-      curPoints = curPoints.sort((a, b) => {
+      curTrack = curTrack.sort((a, b) => {
         return a.time - b.time;
       });
-      curPoints = pointShake(curPoints);
+      curTrack = pointShake(curTrack);
       let result = CreateImportCode({
-        points: this.curPoints,
+        points: this.curTrack,
         viewX: this.resolution[0],
         viewY: this.resolution[1]
       });
-      for (let index in curPoints) {
-        if (cache[index]) curPoints[index].data.push(cache[index]);
+      for (let index in curTrack) {
+        if (cache[index]) curTrack[index].data.push(cache[index]);
       }
       return result;
     },
@@ -176,7 +157,7 @@ export default {
     },
     controlStep: function(mode) {
       //0撤回 1前进
-      let p = this.curPoints[this.curTarget];
+      let p = this.curTrack[this.curTarget];
       if (mode == 0) {
         if (p.data.length != 0) {
           p.cache.push(p.data.pop());
@@ -232,6 +213,7 @@ export default {
     }
   },
   mounted() {
+
     let c = this.$refs.canvas;
     let self = this;
     c.addEventListener(

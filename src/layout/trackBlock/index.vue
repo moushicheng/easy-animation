@@ -36,10 +36,9 @@
     </div> -->
 
     <!-- frame-track的整体思路应该是内部存储一份数据，所有增删改查操作在内部执行，每个动作做完之后向父组件trackBlock发送改变命令，强制改变帧数据 -->
-    <frame-track @click.native="choiceTrack(1)" ref="frameTrack"></frame-track>
-    <frame-track @click.native="choiceTrack(2)"></frame-track>
+    <frame-track @click.native="choiceTrack(index-1)" ref="frameTrack" v-for="index in trackTotal" :key="index" :trackIndex="index-1" ></frame-track>
     {{ trackTarget }}
-    <el-dialog :title="formData.type" :visible.sync="dialogVisible" width="30%">
+    <!-- <el-dialog :title="formData.type" :visible.sync="dialogVisible" width="30%">
       <form ref="addForm" id="addForm">
         <div class="form-item">
           <p class="form-item-head">Set Time</p>
@@ -59,7 +58,7 @@
         <el-button type="primary" @click="submitForm">confirm</el-button>
         <el-button @click="dialogVisible = false">cancel</el-button>
       </span>
-    </el-dialog>
+    </el-dialog> -->
   </div>
 </template>
 
@@ -68,27 +67,11 @@ import { verify } from "@/utils/form.js";
 import { formatTime } from "@/utils/index.js";
 import { frame } from "@/components/index.js";
 import frameTrack from "./components/frameTrack";
+import { mapState,mapGetters,mapMutations} from 'vuex'
 export default {
   name: "trackBlock",
   data() {
     return {
-      tracksData: [
-        [
-          //curTrack
-          {
-            //curData
-            order: 0,
-            time: new Date(0)
-          }
-        ]
-        // [
-        //   {
-        //     order: 0,
-        //     time: new Date(0),
-        //   },
-        // ],
-      ],
-      targets: [0], //curTarget
       formData: {
         minute: 0,
         second: 0,
@@ -105,24 +88,22 @@ export default {
         '00:02.000"',
         '00:02.500"'
       ],
-      target: 0,
       frameX: null
     };
   },
   computed: {
-    curData: function() {
-      return this.curTrack[this.curTarget];
-    },
-    curTarget: function() {
-      return this.targets[this.trackTarget];
-    },
-    curTrack: function() {
-      //->timeData
-      return this.tracksData[this.trackTarget];
-    },
-    trackTarget: function() {
-      return this.$store.trackTarget;
-    }
+     ...mapState([
+      'tracksData',
+      'trackTarget',
+      'targets'
+    ]),
+    ...mapGetters([
+      'curData',
+      'curTarget',
+      'curTrack',
+      'trackTotal'
+    ]),
+
   },
   watch: {
     curTrack: {
@@ -152,6 +133,9 @@ export default {
     }
   },
   methods: {
+    ...mapMutations([
+      'choiceTrack'
+    ]),
     addFrame: function(done) {
       //添加新帧
       this.formData.type = "ADD[new Frame]";
@@ -176,41 +160,38 @@ export default {
       this.formData.type = "[Change]MaxTime";
       this.dialogVisible = true;
     },
-    onFrameClick: function(order) {
-      this.$emit("choiceTarget", order);
-    },
-    onDrag: function(order) {
-      //鼠标拖动帧执行的逻辑
-      let frame = this.$refs.frame[order].$el;
-      let container = this.$refs.frameContainer;
-      let b = this.$refs.timeItem.clientWidth;
-      let self = this;
-      let pop = frame.children[1];
+    // onFrameClick: function(order) {
+    //   this.$emit("choiceTarget", order);
+    // },
+    // onDrag: function(order) {
+    //   //鼠标拖动帧执行的逻辑
+    //   let frame = this.$refs.frame[order].$el;
+    //   let container = this.$refs.frameContainer;
+    //   let b = this.$refs.timeItem.clientWidth;
+    //   let self = this;
+    //   let pop = frame.children[1];
 
-      let x = container.offsetLeft + 16; //1rem=16
-      document.onmousemove = function(e) {
-        let ratio = (e.pageX - x) / (container.clientWidth - b);
-        if (ratio <= 0) ratio = 0;
-        if (ratio > 1) ratio = 1;
-        self.curTrack[order].time = new Date(self.maxTime * ratio);
+    //   let x = container.offsetLeft + 16; //1rem=16
+    //   document.onmousemove = function(e) {
+    //     let ratio = (e.pageX - x) / (container.clientWidth - b);
+    //     if (ratio <= 0) ratio = 0;
+    //     if (ratio > 1) ratio = 1;
+    //     self.curTrack[order].time = new Date(self.maxTime * ratio);
 
-        //对hover框进行操作，触底反弹,和上面的帧拖动逻辑无关,但不需要解耦（目测日后不需要维护hh
-        let popLeft = pop.getBoundingClientRect().left + pop.clientWidth;
-        let ww = window.innerWidth;
-        if (popLeft >= ww - 150)
-          pop.style.transform = `translateX(-${popLeft - ww + 50}px)`;
-        else {
-          pop.style.transform = null;
-        }
-      };
-      document.onmouseup = function() {
-        //清除盒子的移动事件;
-        document.onmousemove = null;
-      };
-    },
-    choiceTrack: function(index) {
-      this.trackTarget = index;
-    },
+    //     //对hover框进行操作，触底反弹,和上面的帧拖动逻辑无关,但不需要解耦（目测日后不需要维护hh
+    //     let popLeft = pop.getBoundingClientRect().left + pop.clientWidth;
+    //     let ww = window.innerWidth;
+    //     if (popLeft >= ww - 150)
+    //       pop.style.transform = `translateX(-${popLeft - ww + 50}px)`;
+    //     else {
+    //       pop.style.transform = null;
+    //     }
+    //   };
+    //   document.onmouseup = function() {
+    //     //清除盒子的移动事件;
+    //     document.onmousemove = null;
+    //   };
+    // },
     reDrawFrame: function() {
       let count = 0;
       for (const item of this.curTrack) {
@@ -229,46 +210,46 @@ export default {
       this.timeLineData = result;
     },
     //表单提交
-    submitForm: function() {
-      this.dialogVisible = false;
+    // submitForm: function() {
+    //   this.dialogVisible = false;
 
-      //对表单值进行效验
-      let min = this.formData.minute;
-      let second = this.formData.second;
-      let ms = this.formData.millisecond;
-      if (
-        !verify(min, "range", "0,60") ||
-        !verify(second, "range", "0,60") ||
-        !verify(ms, "range", "0,1000")
-      )
-        return;
-      let curTime = new Date(min * 60 * 1000 + second * 1000 + ms * 1);
+    //   //对表单值进行效验
+    //   let min = this.formData.minute;
+    //   let second = this.formData.second;
+    //   let ms = this.formData.millisecond;
+    //   if (
+    //     !verify(min, "range", "0,60") ||
+    //     !verify(second, "range", "0,60") ||
+    //     !verify(ms, "range", "0,1000")
+    //   )
+    //     return;
+    //   let curTime = new Date(min * 60 * 1000 + second * 1000 + ms * 1);
 
-      switch (this.formData.type) {
-        case "ADD[new Frame]": {
-          this.curTrack.push({
-            order: this.curTrack.length,
-            time: curTime
-          });
-          //传递新帧给主页面
-          this.$emit("frameDelivery", curTime.valueOf());
-          this.$emit("choiceTarget", this.curTrack.length - 1);
-          this.$set(this.targets, this.curTarget, this.curTrack.length - 1);
-          break;
-        }
-        case "[Change]Frame": {
-          this.curData.time = curTime;
-          this.$emit("changeFrame", { order: this.curTarget, time: curTime });
-          this.$emit("choiceTarget", this.curTarget);
-          break;
-        }
-        case "[Change]MaxTime": {
-          this.maxTime = curTime;
-          this.reDrawTrack();
-        }
-      }
-      if (this.maxTime <= curTime) this.maxTime = curTime;
-    },
+    //   switch (this.formData.type) {
+    //     case "ADD[new Frame]": {
+    //       this.curTrack.push({
+    //         order: this.curTrack.length,
+    //         time: curTime
+    //       });
+    //       //传递新帧给主页面
+    //       this.$emit("frameDelivery", curTime.valueOf());
+    //       this.$emit("choiceTarget", this.curTrack.length - 1);
+    //       this.$set(this.targets, this.curTarget, this.curTrack.length - 1);
+    //       break;
+    //     }
+    //     case "[Change]Frame": {
+    //       this.curData.time = curTime;
+    //       this.$emit("changeFrame", { order: this.curTarget, time: curTime });
+    //       this.$emit("choiceTarget", this.curTarget);
+    //       break;
+    //     }
+    //     case "[Change]MaxTime": {
+    //       this.maxTime = curTime;
+    //       this.reDrawTrack();
+    //     }
+    //   }
+    //   if (this.maxTime <= curTime) this.maxTime = curTime;
+    // },
 
     setTarget(index) {
       this.$set(this.targets, this.trackTarget, index);
