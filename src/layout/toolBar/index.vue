@@ -1,5 +1,15 @@
 <template>
   <div id="toolBar">
+    <div class="recommand">
+      <h1>Easy-animation</h1>
+      <h1>v1.0</h1>
+      <main>
+        <a href="https://github.com/a1163675107/easy-animation">
+          welcome,please use it to draw your awesome animation before reading
+          github instruction
+        </a>
+      </main>
+    </div>
     <div class="header">Drawing tools</div>
     <div class="tool-item" @click="choiceTools(0)" :style="changeToolStyle(0)">
       <poper
@@ -16,7 +26,7 @@
         <i class="fa fa-pencil" aria-hidden="true"></i>
       </div>
     </div>
-    <div class="tool-item" @click="choiceTools(2)" :style="changeToolStyle(2)">
+    <!-- <div class="tool-item" @click="choiceTools(2)" :style="changeToolStyle(2)">
       <poper content="fill" popContent="给图形填充颜色(making...)"></poper>
       <div class="icon">
         <i class="fa fa-circle" aria-hidden="true"></i>
@@ -27,7 +37,7 @@
       <div class="icon">
         <i class="fa fa-braille" aria-hidden="true"></i>
       </div>
-    </div>
+    </div> -->
     <div class="header">Auxiliary tools</div>
     <!-- <div class="tool-item">
       <p>show</p>
@@ -199,7 +209,26 @@ export default {
   border: 1px solid white;
   padding: 1rem;
   min-height: 80vh;
-
+  .recommand {
+    font-size: 1.4rem;
+    h1 {
+      font-size: 1.3rem;
+      &:nth-child(1) {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+      }
+    }
+    main {
+      max-width: 10rem;
+      margin-top: 5px;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 5px;
+      transition: 0.3s;
+      &:hover {
+        color:rgb(159, 208, 212)
+      }
+    }
+  }
   .header {
     margin: 2rem 0 1rem 0;
     font-size: 1.3rem;
