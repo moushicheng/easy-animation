@@ -25,6 +25,7 @@ export default {
   }
 
   .popContent {
+    display:none;
     opacity: 0;
     position: absolute;
     left: calc(100% + 1rem);
@@ -42,6 +43,7 @@ export default {
   }
   &:hover {
     .popContent {
+      display:block;
       opacity: 1;
     }
   }

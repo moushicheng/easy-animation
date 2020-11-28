@@ -217,6 +217,7 @@ export default {
       color: rgb(159, 208, 212);
       ::v-deep .popover {
         .popContent {
+          display: block;
           opacity: 1;
         }
       }
