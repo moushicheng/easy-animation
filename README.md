@@ -52,8 +52,8 @@ css代码可以直接置入你的前端项目中使用！✌️
 
 3.```npm run serve```
 
-## 2.服务器上在线体验
-还未更新......
+## 2.在线体验
+[Github Pages](https://moushicheng.github.io/easy-animation/)
 
 # 使用教程
 ## 帧管理
