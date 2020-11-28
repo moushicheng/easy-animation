@@ -1,18 +1,18 @@
 <!--
  * @Author: your name
  * @Date: 2020-11-20 21:07:16
- * @LastEditTime: 2020-11-25 19:05:16
+ * @LastEditTime: 2020-11-26 20:12:21
  * @LastEditors: your name
  * @Description:
  * @FilePath: \easy_animate\src\layout\trackBlock\components\frameTrack.vue
  * @可以输入预定的版权声明、个性签名、空行等
 -->
 <template>
-    <div class="frameTrack">
+    <div class="frameTrack" :class="trackClass">
       <p class="frameTarget">cur:{{target}}</p>
       <div class="frameContainer" ref='frameContainer'>
         <frame
-        v-for="item in curTrack"
+        v-for="item in data"
         :key="item.index"
         :content="item.order"
         :popContent=" formatTime(item.time)"
@@ -20,13 +20,14 @@
         ref="frame"
         @click="onFrameClick(item.order)"
         @adjust="adjust(item)"
+        @mousedown.native="onDrag(item.order)"
         >
    <!-- @delete="deleteFrame(item.order)"
-        @adjust="adjustFrame(item)"
-        @drag="onDrag(item.order)"
         @mousedown.native="onDrag(item.order)" -->
       </div>
-      <div class="plusBtn"  @click="add">+</div>
+      <div class="plusBtn"  @click="add">
+        <i class="fa fa-plus" aria-hidden="true"></i>
+      </div>
 
       <el-dialog :title="formData.type" :visible.sync="dialogVisible" width="30%">
       <form ref="addForm" id="addForm">
@@ -64,19 +65,21 @@ export default {
         type: null,
       },
       data: null,
-      target: null,
+      target: 0,
       dialogVisible: false,
-      curTrack: null,
     };
   },
   components: { frame },
   computed: {
-    ...mapState(["tracksData", "trackTarget", "targets"]),
-    ...mapGetters(["curData"]),
+    ...mapState(["tracksData", "trackTarget", "targets","maxTime"]),
+    ...mapGetters(["curData","curTrack"]),
+    trackClass:function(){
+      if(this.trackTarget==this.trackIndex)return 'checkClass';
+      return ' '
+    }
   },
   mounted: function () {
-    this.curTrack = this.tracksData[this.trackIndex];
-    this.target = this.targets[this.trackIndex];
+    this.data= this.tracksData[this.trackIndex];
   },
   methods: {
     onFrameClick: function (order) {
@@ -98,6 +101,37 @@ export default {
       this.formData.type = "[Adjust]Frame";
       this.dialogVisible = true;
     },
+     onDrag: function(order) {
+      //鼠标拖动帧执行的逻辑
+      this.choiceTrack(this.trackIndex)
+      let frame = this.$refs.frame[order].$el;
+      let container = this.$refs.frameContainer;
+      let b = this.itemWidth//这个没有诶
+      let self = this;
+      let pop = frame.children[1];
+
+      let x = container.offsetLeft + 24; //1rem=16
+      document.onmousemove = function(e) {
+        if(e.target.className=='menu-item')return;
+        let ratio = (e.pageX - x) / (container.clientWidth - b);
+        if (ratio <= 0) ratio = 0;
+        if (ratio > 1) ratio = 1;
+        self.curTrack[order].time = new Date(self.maxTime * ratio);
+
+        // 对hover框进行操作，触底反弹,和上面的帧拖动逻辑无关,但不需要解耦（目测日后不需要维护hh
+        let popLeft = pop.getBoundingClientRect().left + pop.clientWidth;
+        let ww = window.innerWidth;
+        if (popLeft >= ww - 150)
+          pop.style.transform = `translateX(-${popLeft - ww + 50}px)`;
+        else {
+          pop.style.transform = null;
+        }
+      };
+      document.onmouseup = function() {
+        //清除盒子的移动事件;
+        document.onmousemove = null;
+      };
+    },
     //表单提交
     submitForm: function () {
       //对表单值进行效验
@@ -105,7 +139,7 @@ export default {
       if (!curTime) return;
       switch (this.formData.type) {
         case "ADD[new Frame]": {
-          let order = this.curTrack.length;
+          let order = this.data.length;
           this.target = order;
           this.addFrame({
             order,
@@ -114,16 +148,10 @@ export default {
             cache: [],
             finish: false,
           });
-
-          // this.$store.commit('choiceTrack',this.data.length-1);
-          // this.$parent.$emit("choiceTarget", this.data.length - 1);
           break;
         }
         case "[Adjust]Frame": {
-          this.adjustFrame(curTime)
-          // this.$emit("changeFrame", { order: this.curTarget, time: curTime });
-          // this.$emit("choiceTarget", this.curTarget);
-
+          this.adjustFrame(curTime);
           break;
         }
         case "[Change]MaxTime": {
@@ -131,22 +159,44 @@ export default {
           // this.reDrawTrack();
         }
       }
-      if (this.maxTime <= curTime) this.maxTime = curTime;
+      if (this.maxTime <= curTime) this.changeMaxTime(curTime);
       this.dialogVisible = false;
     },
     onVerifyErrot: function (message) {
       //检测表单
       this.$message({ message, type: "warning" });
     },
-    ...mapMutations(["choiceTrack", "addFrame", "choiceTarget","adjustFrame"]),
+    ...mapMutations(["choiceTrack", "addFrame", "choiceTarget", "adjustFrame","changeMaxTime"]),
   },
   watch: {
     target: function (val) {
-      console.log(val);
       this.choiceTarget(val);
     },
+    data: {
+      handler: function () {
+        //使帧对其时间轨,根据f(时间/总时间) -> f(位置)
+        setTimeout(() => {
+          //对其帧位置
+          let frames = this.$refs.frame;
+          let container = this.$refs.frameContainer;
+          let tcWidth = container.clientWidth;
+          let b=this.itemWidth;
+          for (const index in frames) {
+            const frame = frames[index].$el;
+            const data = this.data[index];
+            let ratio = (data.time * 1) / (this.maxTime * 1); //粗调
+            let offset = -b * ratio + "px"; //细调,消除偏移量
+            ratio = ratio * 100 + "%";
+            frame.style.setProperty("--x", ratio);
+            frame.style.setProperty("--y", offset);
+          }
+        });
+      },
+      deep:true,
+    },
   },
-  props: ["trackIndex"],
+
+  props: ["trackIndex",'itemWidth'],
 };
 </script>
 
@@ -175,6 +225,7 @@ export default {
     }
   }
   .plusBtn {
+    margin-left:1rem;
     font-size: 1rem;
     font-weight: 900;
     color: white;
@@ -213,5 +264,9 @@ export default {
   .el-dialog__title {
     color: white;
   }
+}
+.checkClass{
+      // border: 1px solid rgba(255, 255, 255, 0.2);
+      background:rgba(149, 165, 166, 0.1)
 }
 </style>

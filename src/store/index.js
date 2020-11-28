@@ -27,7 +27,8 @@ let store=new Vuex.Store({
       ]
     ],
     trackTarget: 0,
-    targets: [0,0]
+    targets: [0,0],
+    maxTime: new Date(2500),
   },
   mutations: {
     choiceTrack(state, v) {
@@ -44,6 +45,30 @@ let store=new Vuex.Store({
       let track=store.getters.curTrack;
       track.push(item);
     },
+    deleteFrame: function(order) {
+      state.curTrack.splice(order, 1);
+      store.commit('reCountFrame')
+    },
+    changeMaxTime(state,curTime){
+      state.maxTime=curTime;
+    },
+    addTrack(state){
+     state.tracksData.push( [
+      {
+        order: 0,
+        time: new Date(0),
+        data: [],
+        cache: [],
+        finish: false
+      }
+    ])
+    },
+    reCountFrame(state){
+      let count = 0;
+      for (const item of state.curTrack) {
+        item.order = count++;
+      }
+    }
   },
   getters:{
     curData:function(state,getters){ //当前选中帧中的当前帧数据

@@ -19,11 +19,7 @@
         </div>
       </div>
     </div>
-    <trackBlock
-      @frameDelivery="frameDelivery"
-      @choiceTarget="choiceTarget"
-      @changeFrame="changeFrame"
-    ></trackBlock>
+    <trackBlock></trackBlock>
 
     <div id="github">
       <div class="mask"></div>
@@ -49,6 +45,7 @@ import {
   CreateImportCode,
   pointShake,
   sayManger,
+  mergeData
 } from "@/utils/index.js";
 
 export default {
@@ -90,31 +87,12 @@ export default {
     ])
   },
   methods: {
-    ...mapMutations([
-      'adjustFrame'
-    ]),
     draw: function(command) {
-      drawTools.draw(this.curTrack, this.curTarget, this.$refs.canvas, command);
+      drawTools.draw(command);
     },
-    frameDelivery: function(m) {
-      this.curTrack.push({
-        order: this.curTrack.length,
-        time: m,
-        data: [],
-        finish: false
-      });
-    },
-    choiceTarget: function(m) { //准备废弃
-      this.$set(this.targets,this.trackTarget,m);
-      this.draw();
-    },
-    changeFrame: function(item) { //准备废弃
-      this.curTrack[item.order].time = item.time;
-    },
-
     importCode: function() {
       //导出代码
-      this.createCode()
+      CreateImportCode(this.resolution[0],this.resolution[1])
         .then(res => {
           res = res.replace("||", "");
           this.$alert(res, "SUCCESS", {
@@ -127,28 +105,6 @@ export default {
           });
         });
     },
-    createCode: function() {
-      //创建导出代码
-      let cache = [];
-      let curTrack=this.curTrack; //它是个引用类型的对象
-      for (const item of curTrack) {
-        //去除最后一个点，因为它实际上是废的,clip-path不需要闭合点坐标
-        cache.push(item.data.pop());
-      }
-      curTrack = curTrack.sort((a, b) => {
-        return a.time - b.time;
-      });
-      curTrack = pointShake(curTrack);
-      let result = CreateImportCode({
-        points: this.curTrack,
-        viewX: this.resolution[0],
-        viewY: this.resolution[1]
-      });
-      for (let index in curTrack) {
-        if (cache[index]) curTrack[index].data.push(cache[index]);
-      }
-      return result;
-    },
     insert: function(imgList) {
       this.imgList = imgList;
     },
@@ -157,6 +113,7 @@ export default {
     },
     controlStep: function(mode) {
       //0撤回 1前进
+      mergeData(800,400);
       let p = this.curTrack[this.curTarget];
       if (mode == 0) {
         if (p.data.length != 0) {
@@ -187,7 +144,7 @@ export default {
         this.isReview = false;
         return;
       }
-      this.createCode()
+      CreateImportCode()
         .then(res => {
           this.cssCode = res;
           this.isReview = true;
@@ -213,7 +170,7 @@ export default {
     }
   },
   mounted() {
-
+    drawTools.getDom(this.$refs.canvas)
     let c = this.$refs.canvas;
     let self = this;
     c.addEventListener(
