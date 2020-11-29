@@ -16,6 +16,7 @@ label {
 html {
   height: 100%;
   box-sizing: border-box;
+  
 }
 
 *,
@@ -66,12 +67,16 @@ input {
 	background: rgba(255, 255, 255, 0.1);
 }
 
-.el-message-box{
-  p{
-    white-space:pre-wrap;
+ .el-message-box{
+  max-height:80vh;
+  overflow: auto;
+  *{
+    overflow: auto;
   }
-
+  p{
+    max-height:60vh;
+    white-space:pre-wrap;
+    vertical-align:auto;
+  }
 }
-
-
 @import "./media.scss";

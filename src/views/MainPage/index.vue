@@ -19,11 +19,7 @@
         </div>
       </div>
     </div>
-    <trackBlock
-      @frameDelivery="frameDelivery"
-      @choiceTarget="choiceTarget"
-      @changeFrame="changeFrame"
-    ></trackBlock>
+    <trackBlock></trackBlock>
 
     <div id="github">
       <div class="mask"></div>
@@ -44,35 +40,19 @@
 <script>
 import Layout from "@/layout/index";
 import drawTools from "@/utils/draw.js";
-import { CreateImportCode, pointShake, sayManger } from "@/utils/index.js";
+import { mapState,mapGetters,mapMutations} from 'vuex'
+import {
+  CreateImportCode,
+  pointShake,
+  sayManger,
+  mergeData
+} from "@/utils/index.js";
 
 export default {
   name: "",
   data() {
     return {
       resolution: [800, 400],
-      points: [
-        {
-          order: 0,
-          time: new Date(0),
-          data: [],
-          cache: [],
-          finish: false
-        }
-      ],
-      // tracksData: [
-      //   [
-      //     {
-      //       order: 0,
-      //       time: new Date(0),
-      //       data: [],
-      //       cache: [],
-      //       finish: false
-      //     }
-      //   ]
-      // ],
-      target: 0,
-      // trackTarget:0,
       image: null,
       layer: 1, //1绘图层 0图片层
       imgList: null,
@@ -94,31 +74,25 @@ export default {
       } else {
         return `z-index:10`;
       }
-    }
+    },
+    ...mapState([
+      'tracksData',
+      'trackTarget',
+      'targets'
+    ]),
+    ...mapGetters([
+      'curData',
+      'curTarget',
+      'curTrack'
+    ])
   },
   methods: {
     draw: function(command) {
-      drawTools.draw(this.points, this.target, this.$refs.canvas, command);
+      drawTools.draw(command);
     },
-    frameDelivery: function(m) {
-      this.points.push({
-        order: this.points.length,
-        time: m,
-        data: [],
-        finish: false
-      });
-    },
-    choiceTarget: function(m) {
-      this.target = m;
-      this.draw();
-    },
-    changeFrame: function(item) {
-      this.points[item.order].time = item.time;
-    },
-
     importCode: function() {
       //导出代码
-      this.createCode()
+      CreateImportCode(this.resolution[0],this.resolution[1])
         .then(res => {
           res = res.replace("||", "");
           this.$alert(res, "SUCCESS", {
@@ -131,27 +105,6 @@ export default {
           });
         });
     },
-    createCode: function() {
-      //创建导出代码
-      let cache = [];
-      for (const item of this.points) {
-        //去除最后一个点，因为它实际上是废的,clip-path不需要闭合点坐标
-        cache.push(item.data.pop());
-      }
-      this.points = this.points.sort((a, b) => {
-        return a.time - b.time;
-      });
-      this.points = pointShake(this.points);
-      let result = CreateImportCode({
-        points: this.points,
-        viewX: this.resolution[0],
-        viewY: this.resolution[1]
-      });
-      for (let index in this.points) {
-        if (cache[index]) this.points[index].data.push(cache[index]);
-      }
-      return result;
-    },
     insert: function(imgList) {
       this.imgList = imgList;
     },
@@ -160,7 +113,7 @@ export default {
     },
     controlStep: function(mode) {
       //0撤回 1前进
-      let p = this.points[this.target];
+      let p = this.curTrack[this.curTarget];
       if (mode == 0) {
         if (p.data.length != 0) {
           p.cache.push(p.data.pop());
@@ -190,7 +143,7 @@ export default {
         this.isReview = false;
         return;
       }
-      this.createCode()
+      CreateImportCode(this.resolution[0],this.resolution[1])
         .then(res => {
           this.cssCode = res;
           this.isReview = true;
@@ -216,16 +169,16 @@ export default {
     }
   },
   mounted() {
+    drawTools.getDom(this.$refs.canvas)
     let c = this.$refs.canvas;
     let self = this;
-
     c.addEventListener(
       "click",
       function(e) {
         if (self.layer == 0 || e.target.className == "img-item") return; //图片层则不绘画||防误触
 
-        let target = self.target;
-        let p = self.points[target]; //当前帧目标数据
+        let target = self.curTarget
+        let p = self.curData //当前帧目标数据
         p.cache = []; //下笔时清空点缓存区数据
         //绘画函数
         if (p.finish == true) return; //如果完成了则直接结束
@@ -253,7 +206,6 @@ export default {
       true
     );
     window.onresize = () => {
-      //并无软用
       let c = this.$refs.canvas;
       let db = this.$refs.drawBlock;
       let maxHeight = db.clientHeight - 15;
