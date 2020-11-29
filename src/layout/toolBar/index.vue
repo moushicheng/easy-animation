@@ -92,7 +92,7 @@
       </div>
     </div>
     <div class="tool-item" @click="importCode">
-      <poper content="export" popContent="导出css代码"></poper>
+      <poper content="import" popContent="导出css代码"></poper>
       <div class="icon">
         <i class="fa fa-download" aria-hidden="true"></i>
       </div>
@@ -153,7 +153,7 @@ export default {
             url: reader.result,
             name: file.name.slice(-10)
           });
-          self.$emit("events", "insert", self.imgList);
+          self.$emit("events", "insert", self.imgList); //似乎没有意义
         },
         false
       );
@@ -246,7 +246,6 @@ export default {
       color: rgb(159, 208, 212);
       ::v-deep .popover {
         .popContent {
-          display: block;
           opacity: 1;
         }
       }
