@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2020-11-19 12:32:37
- * @LastEditTime: 2020-11-20 11:37:51
+ * @LastEditTime: 2020-11-29 09:38:30
  * @LastEditors: your name
  * @Description:
  * @FilePath: \easy_animate\src\layout\reviewWindow\index.vue
@@ -9,8 +9,7 @@
 -->
 <template>
   <div class="window" :style="wStyle">
-    <div class="ele">
-    </div>
+    <div :class="eleStyle(i)" v-for="i in eleAmount" :key="i"></div>
   </div>
 </template>
 
@@ -18,23 +17,37 @@
 export default {
   name: "",
   data() {
-    return {};
+    return {
+      eleAmount:1
+    };
   },
   computed: {
     wStyle: function() {
-      let c=this.canvas;
-      c=c.getBoundingClientRect();
+      let c=this.canvas.getBoundingClientRect();
       return `top:${c.top}px;left:${c.left}px`
-    }
+    },
+
   },
   mounted() {
-    console.log(1);
-    let style = document.styleSheets[0];
-    //这样分开就行了!
-     style.insertRule(this.cssCode.split('||')[0],style.cssRules.length); //写入样式/
-     style.insertRule(this.cssCode.split('||')[1],style.cssRules.length);
-  },
+    console.log(this.cssCode);
+    let eles=this.cssCode.split('||')[0];
+    let animations=this.cssCode.split('||')[1];
+    eles=eles.match(/.ele-\d+{[\d\D]+?}/g)
 
+    this.eleAmount=eles.length;
+    animations=animations.match(/@keyframes [^@]+}/g)
+    eles.push(...animations);
+    let style = document.styleSheets[0];
+    for (const item of eles) {
+       style.insertRule(item,style.cssRules.length); //写入样式/
+    }
+    //这样分开就行了!
+  },
+  methods:{
+ eleStyle:function(i){
+      return `ele-${i-1}`
+    }
+  },
   props: ["cssCode","canvas"]
 };
 </script>

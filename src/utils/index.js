@@ -34,8 +34,8 @@ function mergeData(vx, vy) {
         //处理点数据转换成clip-path能接受的形式
         item.data = item.data.map(item => {
           item = item.split(",");
-          let x = (item[0] / vx).toFixed(4);
-          let y = (item[1] / vy).toFixed(4);
+          let x = (item[0]*100 / vx).toFixed(2);
+          let y = (item[1]*100 / vy).toFixed(2);
           return `${x}% ${y}%`;
         });
         return {
@@ -60,6 +60,7 @@ function CreateImportCode(viewX, viewY) {
      .ele-${index}{
        width:${viewX}px;
        height:${viewY}px;
+       position: absolute;
        background: black;
        animation: move-${index} ${maxTime / 1000}s linear infinite;
      }`;
@@ -85,7 +86,6 @@ function CreateImportCode(viewX, viewY) {
     }
     cssCode = cssCode + "}";
   }
-  console.log(cssCode);
   return Promise.resolve(cssCode);
 }
 

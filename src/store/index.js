@@ -14,20 +14,11 @@ let store=new Vuex.Store({
           cache: [],
           finish: false
         },
-
       ],
-      [
-        {
-          order: 0,
-          time: new Date(0),
-          data: [],
-          cache: [],
-          finish: false
-        }
-      ]
+
     ],
     trackTarget: 0,
-    targets: [0,0],
+    targets: [0],
     maxTime: new Date(2500),
   },
   mutations: {
@@ -62,6 +53,7 @@ let store=new Vuex.Store({
         finish: false
       }
     ])
+    state.targets.push(0);
     },
     reCountFrame(state){
       let count = 0;

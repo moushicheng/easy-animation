@@ -33,7 +33,8 @@ let cm = {
       let target=targets[trackIndex]
       let trackTarget = store.state.trackTarget;
       if(index == target &&trackTarget==trackIndex)ctx.strokeStyle = "rgba(0,0,0)";//黑色
-      else ctx.strokeStyle = "rgba(0,0,0,0.4)";//浅色
+      else if(trackTarget==trackIndex)ctx.strokeStyle = "rgba(0,0,0,0.5)";//浅色
+      else ctx.strokeStyle = "rgba(0,0,0,0.3)"
     },
     mergeData() {
       let tracksData = store.state.tracksData;

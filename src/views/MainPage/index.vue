@@ -113,7 +113,6 @@ export default {
     },
     controlStep: function(mode) {
       //0撤回 1前进
-      mergeData(800,400);
       let p = this.curTrack[this.curTarget];
       if (mode == 0) {
         if (p.data.length != 0) {
@@ -144,7 +143,7 @@ export default {
         this.isReview = false;
         return;
       }
-      CreateImportCode()
+      CreateImportCode(this.resolution[0],this.resolution[1])
         .then(res => {
           this.cssCode = res;
           this.isReview = true;

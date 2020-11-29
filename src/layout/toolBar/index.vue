@@ -82,7 +82,7 @@
       </div>
     </div>
     <div class="tool-item" @click="importCode">
-      <poper content="import" popContent="导出css代码"></poper>
+      <poper content="export" popContent="导出css代码"></poper>
       <div class="icon">
         <i class="fa fa-download" aria-hidden="true"></i>
       </div>
