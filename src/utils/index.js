@@ -20,13 +20,13 @@ function suppleZero(n, num) {
   return num;
 }
 
+
 //对轨道中的点信息进行处理
-function mergeData(vx, vy) {
+function mergeData(vx, vy,basicTime) {
   let tracksData = JSON.parse(JSON.stringify(store.state.tracksData)); //深复制，防止更改时伤到引用对象
   let result = [];
-
   for (let track of tracksData) {
-    //虽然这样写看着清晰，但是循环也变成3(n^2)了...
+    basicTime.push(new Date(track[0].time));
     track = pointShake(track)
       .sort((a, b) => a.time - b.time) //按时间排序
       .filter(item => item.finish == true || item.data.length != 0) //清除异常点
@@ -40,7 +40,7 @@ function mergeData(vx, vy) {
         });
         return {
           data: item.data,
-          time: item.time
+          time: new Date(item.time)
         };
       });
 
@@ -51,18 +51,18 @@ function mergeData(vx, vy) {
 
 //绘制导出代码的形式
 function CreateImportCode(viewX, viewY) {
-  let tracksData = mergeData(viewX, viewY);
+  let basicTime=[];
+  let tracksData = mergeData(viewX, viewY,basicTime);
   let cssCode = "";
   for (let [index, track] of Object.entries(tracksData)) {
     if (track.length == 0) continue;
-    let maxTime = new Date(track[track.length - 1].time).valueOf(); //毫秒
+    let maxTime = track[track.length - 1].time.valueOf()-basicTime[index]; //毫秒
     cssCode += `
      .ele-${index}{
        width:${viewX}px;
        height:${viewY}px;
        position: absolute;
-       background: black;
-       animation: move-${index} ${maxTime / 1000}s linear infinite;
+       animation: move-${index} ${maxTime / 1000}s linear infinite ${basicTime[index]/1000}s;
      }`;
   }
   cssCode += `||`;
@@ -70,15 +70,17 @@ function CreateImportCode(viewX, viewY) {
   for (let [index, track] of Object.entries(tracksData)) {
     if (track.length == 0) continue;
     cssCode += `
+
     @keyframes move-${index} {
 `;
     for (const item of track) {
-      let time = new Date(item.time).valueOf();
-      let maxTime = new Date(track[track.length - 1].time).valueOf(); //毫秒
+      let time = item.time.valueOf();
+      let maxTime = track[track.length - 1].time.valueOf()-basicTime[index]; //毫秒
       let data = item.data;
-      let timeRatio = (time / maxTime) * 100;
+      let timeRatio = ( (time-basicTime[index]) /maxTime) * 100;
       if (Number.isNaN(timeRatio)) timeRatio = 0;
       let frame = `          ${timeRatio}%{
+          background: black;
           clip-path: polygon(${data})
          }
        `;
