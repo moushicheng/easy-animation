@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2020-11-20 21:07:16
- * @LastEditTime: 2020-11-26 20:12:21
+ * @LastEditTime: 2020-12-01 19:07:47
  * @LastEditors: your name
  * @Description:
  * @FilePath: \easy_animate\src\layout\trackBlock\components\frameTrack.vue
@@ -52,7 +52,7 @@
 <script>
 import { formatTime } from "@/utils/index.js";
 import { frame } from "@/components/index.js";
-import { verify, getCurTime } from "@/utils/form.js";
+import { getCurTime } from "@/utils/form.js";
 import { mapState, mapGetters, mapMutations } from "vuex";
 export default {
   name: "",

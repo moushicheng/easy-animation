@@ -33,10 +33,10 @@
 </template>
 
 <script>
-import { verify } from "@/utils/form.js";
 import { formatTime } from "@/utils/index.js";
 import frameTrack from "./components/frameTrack";
 import { mapState, mapGetters, mapMutations } from "vuex";
+import drawTools from "@/utils/draw.js";
 export default {
   name: "trackBlock",
   data() {
@@ -65,8 +65,11 @@ export default {
     ...mapGetters(["curData", "curTarget", "curTrack", "trackTotal"]),
   },
   methods: {
-    ...mapMutations(["choiceTrack", "addTrack"]),
-
+    ...mapMutations([ "addTrack"]),
+    choiceTrack:function(i){
+       this.$store.commit('choiceTrack',i)
+       drawTools.draw();
+    },
     adjustMaxTime: function () {
       this.formData.type = "[Change]MaxTime";
       this.dialogVisible = true;
