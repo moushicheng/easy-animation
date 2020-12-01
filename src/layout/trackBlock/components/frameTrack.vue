@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2020-11-20 21:07:16
- * @LastEditTime: 2020-12-01 19:07:47
+ * @LastEditTime: 2020-12-01 20:04:51
  * @LastEditors: your name
  * @Description:
  * @FilePath: \easy_animate\src\layout\trackBlock\components\frameTrack.vue
@@ -21,9 +21,8 @@
         @click="onFrameClick(item.order)"
         @adjust="adjust(item)"
         @mousedown.native="onDrag(item.order)"
+        @delete="deleteFrame(item.order)"
         >
-   <!-- @delete="deleteFrame(item.order)"
-        @mousedown.native="onDrag(item.order)" -->
       </div>
       <div class="plusBtn"  @click="add">
         <i class="fa fa-plus" aria-hidden="true"></i>
@@ -101,6 +100,9 @@ export default {
       this.formData.type = "[Adjust]Frame";
       this.dialogVisible = true;
     },
+    delete:function(i){
+      this.deleteFrame(i)
+    },
      onDrag: function(order) {
       //鼠标拖动帧执行的逻辑
       this.choiceTrack(this.trackIndex)
@@ -166,7 +168,7 @@ export default {
       //检测表单
       this.$message({ message, type: "warning" });
     },
-    ...mapMutations(["choiceTrack", "addFrame", "choiceTarget", "adjustFrame","changeMaxTime"]),
+    ...mapMutations(["choiceTrack", "addFrame", "choiceTarget", "adjustFrame","changeMaxTime","deleteFrame"]),
   },
   watch: {
     target: function (val) {
