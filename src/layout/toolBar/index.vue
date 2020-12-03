@@ -26,18 +26,44 @@
         <i class="fa fa-pencil" aria-hidden="true"></i>
       </div>
     </div>
-    <!-- <div class="tool-item" @click="choiceTools(2)" :style="changeToolStyle(2)">
-      <poper content="fill" popContent="给图形填充颜色(making...)"></poper>
-      <div class="icon">
-        <i class="fa fa-circle" aria-hidden="true"></i>
+    <div
+      class="tool-item"
+      id="colorTool"
+      @click="choiceTools(2)"
+      :style="changeToolStyle(2)"
+    >
+      <div class="item-wrapper">
+        <poper content="fill" popContent="填充颜色,右边的○是调色板"></poper>
+        <div class="icon">
+          <i
+            class="fa fa-circle"
+            aria-hidden="true"
+            :style="'color:' + color"
+          ></i>
+          <el-color-picker
+            v-model="color"
+            size="mini"
+            :show-alpha="true"
+            @change="choiceColor"
+          ></el-color-picker>
+        </div>
+      </div>
+      <div id="colorPallet" @click="changeColor">
+        <i
+         v-for="color in colors"
+         :key="color.index"
+          class="fa fa-circle pallet-item"
+          :style="'color:' + color"
+        ></i>
       </div>
     </div>
-    <div class="tool-item">
+    <!-- <div class="tool-item">
       <poper content="color" popContent="选择一个颜色(making)"></poper>
       <div class="icon">
         <i class="fa fa-braille" aria-hidden="true"></i>
       </div>
     </div> -->
+
     <div class="header">Auxiliary tools</div>
     <!-- <div class="tool-item">
       <p>show</p>
@@ -97,7 +123,7 @@
         <i class="fa fa-download" aria-hidden="true"></i>
       </div>
     </div>
-    <div class="tool-item " id="resolution">
+    <div class="tool-item" id="resolution">
       <p>resolution</p>
       <div id="resolutionBlock">
         <input type="text" v-model="resolution[0]" />
@@ -107,7 +133,7 @@
     </div>
     <input
       type="file"
-      style="filter:alpha(opacity=0);opacity:0;  position: absolute;"
+      style="filter: alpha(opacity=0); opacity: 0; position: absolute"
       ref="imgUpload"
     />
   </div>
@@ -136,22 +162,24 @@ export default {
     return {
       layerShow: false,
       tool: 1,
-      imgList: []
+      imgList: [],
+      color:"rgba(0,0,0,1)",
+      colors: ["rgba(0,0,0,1)"],
     };
   },
   components: { poper },
   mounted() {
     let input = this.$refs.imgUpload;
     let self = this;
-    input.addEventListener("change", function() {
+    input.addEventListener("change", function () {
       let file = this.files[0];
       let reader = new FileReader();
       reader.addEventListener(
         "load",
-        function() {
+        function () {
           self.imgList.push({
             url: reader.result,
-            name: file.name.slice(-10)
+            name: file.name.slice(-10),
           });
           self.$emit("events", "insert", self.imgList); //似乎没有意义
         },
@@ -163,19 +191,19 @@ export default {
     });
   },
   methods: {
-    importCode: function() {
+    importCode: function () {
       this.$emit("events", "importCode");
     },
-    insertImage: function() {
+    insertImage: function () {
       let input = this.$refs.imgUpload;
       this.trigger(input, "click");
     },
-    openLayout: function() {
+    openLayout: function () {
       this.layerShow = !this.layerShow;
     },
-    choiceTools: function(name) {
+    choiceTools: function (name) {
       this.tool = name;
-      if (name <= 1) this.$emit("events", "choiceLayout", name);
+      this.$emit("events", "choiceLayer", name);
     },
     changeToolStyle(name) {
       if (name == this.tool) return `color:rgb(159, 208, 212)`;
@@ -192,15 +220,24 @@ export default {
     },
     preview() {
       this.$emit("events", "preview");
+    },
+    choiceColor(){
+      this.colors.push(this.color);
+    },
+    changeColor(e){
+      if(!e.target.style.color)return;
+       this.color=e.target.style.color
     }
   },
   model: {
     prop: "resolution",
-    event: "change"
+    event: "change",
   },
   props: {
-    resolution: Array
-  }
+    resolution: Array,
+  },
+  watch: {
+  },
 };
 </script>
 
@@ -225,7 +262,7 @@ export default {
       padding: 5px;
       transition: 0.3s;
       &:hover {
-        color:rgb(159, 208, 212)
+        color: rgb(159, 208, 212);
       }
     }
   }
@@ -250,7 +287,6 @@ export default {
         }
       }
     }
-
     p {
       margin-right: 1vw;
       width: fit-content;
@@ -260,6 +296,42 @@ export default {
       &:hover {
         transform: rotate(15deg);
       }
+    }
+  }
+  #colorTool {
+    position: relative;
+    display: block;
+    .item-wrapper {
+      display: flex;
+      justify-content: space-between;
+       &:hover {
+      font-size: 1.25rem;
+      color: rgb(159, 208, 212);
+      ::v-deep .popover {
+        .popContent {
+          opacity: 1;
+        }
+      }
+
+    }
+    }
+    #colorPallet {
+      max-width: 10rem;
+      margin-top:0.5rem;
+      overflow: hidden;
+      border:1px solid rgb(154, 164, 175);
+      padding:0.5rem 0 0.5rem 0.5rem;
+      .pallet-item{
+        float:left ;
+        margin-right:0.5rem;
+        font-size: 0.5rem;
+      }
+    }
+    .el-color-picker {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      opacity: 0;
     }
   }
   #insertTool {

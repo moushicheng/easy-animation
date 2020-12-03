@@ -82,8 +82,26 @@ function getDom(dom) {
     ctx = dom.getContext("2d");
   }
 }
+function isInside(track,x,y){
+  let result = false;
+  for (const data of track) {
+    for (let i = 0; i < data.length - 1; i++) {
+      let o = data[i].split(",").map((item) => item * 1); //默认在线段在低处的点
+      let n = data[i + 1].split(",").map((item) => item * 1); //高处
+
+        if ((o[1] > y) != (n[1] > y) &&
+          (x < (n[0]-o[0]) * (y - o[1]) / (n[1] - o[1]) +o[0]))
+      {
+          result = !result;
+      }
+    }
+  }
+  return result
+
+}
 let drawTools = {
   draw,
-  getDom
+  getDom,
+  isInside
 };
 export default drawTools;
