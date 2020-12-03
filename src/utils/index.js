@@ -29,7 +29,7 @@ function mergeData(vx, vy,basicTime) {
     basicTime.push(new Date(track[0].time));
     track = pointShake(track)
       .sort((a, b) => a.time - b.time) //按时间排序
-      .filter(item => item.finish == true || item.data.length != 0) //清除异常点
+      .filter(item => item.finish == true && item.data.length != 0) //清除异常点
       .map(item => {
         //处理点数据转换成clip-path能接受的形式
         item.data = item.data.map(item => {
