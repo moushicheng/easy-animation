@@ -12,7 +12,8 @@ let store = new Vuex.Store({
           time: new Date(0),
           data: [],
           cache: [],
-          finish: false
+          finish: false,
+          color:null,
         }
       ]
     ],
@@ -49,7 +50,8 @@ let store = new Vuex.Store({
           time: new Date(0),
           data: [],
           cache: [],
-          finish: false
+          finish: false,
+          color:null,
         }
       ]);
       state.targets.push(0);
@@ -60,6 +62,15 @@ let store = new Vuex.Store({
       for (const item of state.curTrack) {
         item.order = count++;
       }
+    },
+    setColor(state,setting){
+      let index=setting.index;
+      if(index===false)return;
+      let color=setting.color;
+      store.getters.curTrack[index].color=color;
+    },
+    setTime(state,time){
+      store.getters.curData.time = new Date(time);
     }
   },
   getters: {

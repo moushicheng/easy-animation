@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2020-11-19 12:32:37
- * @LastEditTime: 2020-11-29 09:38:30
+ * @LastEditTime: 2020-12-04 15:02:25
  * @LastEditors: your name
  * @Description:
  * @FilePath: \easy_animate\src\layout\reviewWindow\index.vue
@@ -29,11 +29,9 @@ export default {
 
   },
   mounted() {
-    console.log(this.cssCode);
     let eles=this.cssCode.split('||')[0];
     let animations=this.cssCode.split('||')[1];
     eles=eles.match(/.ele-\d+{[\d\D]+?}/g)
-
     this.eleAmount=eles.length;
     animations=animations.match(/@keyframes [^@]+}/g)
     eles.push(...animations);
@@ -54,7 +52,7 @@ export default {
 
 <style lang="scss" scoped>
 .window {
-  position: absolute;
+  position: fixed;
   z-index: 999;
 }
 </style>

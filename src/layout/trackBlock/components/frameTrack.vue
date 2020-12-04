@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2020-11-20 21:07:16
- * @LastEditTime: 2020-12-01 20:04:51
+ * @LastEditTime: 2020-12-04 12:30:42
  * @LastEditors: your name
  * @Description:
  * @FilePath: \easy_animate\src\layout\trackBlock\components\frameTrack.vue
@@ -106,19 +106,21 @@ export default {
      onDrag: function(order) {
       //鼠标拖动帧执行的逻辑
       this.choiceTrack(this.trackIndex)
+      this.choiceTarget(order)
       let frame = this.$refs.frame[order].$el;
       let container = this.$refs.frameContainer;
-      let b = this.itemWidth//这个没有诶
-      let self = this;
+      let b = this.itemWidth
       let pop = frame.children[1];
 
+
       let x = container.offsetLeft + 24; //1rem=16
-      document.onmousemove = function(e) {
+      document.onmousemove = (e) =>{
         if(e.target.className=='menu-item')return;
         let ratio = (e.pageX - x) / (container.clientWidth - b);
         if (ratio <= 0) ratio = 0;
         if (ratio > 1) ratio = 1;
-        self.curTrack[order].time = new Date(self.maxTime * ratio);
+        // this.curTrack[order].time = new Date(this.maxTime * ratio); //这里似乎有问题喔,这样似乎更改不到store中的数据;
+        this.setTime(this.maxTime * ratio)
 
         // 对hover框进行操作，触底反弹,和上面的帧拖动逻辑无关,但不需要解耦（目测日后不需要维护hh
         let popLeft = pop.getBoundingClientRect().left + pop.clientWidth;
@@ -157,8 +159,8 @@ export default {
           break;
         }
         case "[Change]MaxTime": {
-          // this.maxTime = curTime;
-          // this.reDrawTrack();
+          this.maxTime = curTime;
+          this.reDrawTrack();
         }
       }
       if (this.maxTime <= curTime) this.changeMaxTime(curTime);
@@ -168,7 +170,7 @@ export default {
       //检测表单
       this.$message({ message, type: "warning" });
     },
-    ...mapMutations(["choiceTrack", "addFrame", "choiceTarget", "adjustFrame","changeMaxTime","deleteFrame"]),
+    ...mapMutations(["choiceTrack", "addFrame", "choiceTarget", "adjustFrame","changeMaxTime","deleteFrame","setTime"]),
   },
   watch: {
     target: function (val) {

@@ -71,8 +71,8 @@ export default {
        drawTools.draw();
     },
     adjustMaxTime: function () {
-      this.formData.type = "[Change]MaxTime";
-      this.dialogVisible = true;
+      // this.formData.type = "[Change]MaxTime";
+      // this.dialogVisible = true;
     },
     reDrawFrame: function () {
       let count = 0;

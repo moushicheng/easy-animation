@@ -58,6 +58,7 @@ export default {
       imgList: null,
       isReview: false,
       cssCode: null,
+      color:'rgba(0, 0, 0,1)'
     };
   },
   computed: {
@@ -79,6 +80,7 @@ export default {
     ...mapGetters(["curData", "curTarget", "curTrack"]),
   },
   methods: {
+    ...mapMutations(['setColor']) ,
     draw: function (command) {
       drawTools.draw(command);
     },
@@ -96,12 +98,6 @@ export default {
             confirmButtonText: "确定",
           });
         });
-    },
-    insert: function (imgList) {
-      this.imgList = imgList;
-    },
-    choiceLayer: function (i) {
-      this.layer = i;
     },
     controlStep: function (mode) {
       //0撤回 1前进
@@ -131,12 +127,15 @@ export default {
       this.draw();
     },
     preview: function () {
+
       if (this.isReview) {
+        this.draw();
         this.isReview = false;
         return;
       }
       CreateImportCode(this.resolution[0], this.resolution[1])
         .then((res) => {
+          this.draw('noColor');
           this.cssCode = res;
           this.isReview = true;
         })
@@ -152,10 +151,12 @@ export default {
           this[EventName](...args);
         },
         importCode: this.importCode,
-        insert: this.insert,
-        choiceLayer: this.choiceLayer,
+        insert: (imgList)=>this.imgList = imgList,
+        choiceLayer: (i)=>this.layer = i,
+        _changeColor:(color)=>this.color=color,
         controlStep: this.controlStep,
         preview: this.preview,
+
       };
       eventManger.run();
     },
@@ -163,18 +164,17 @@ export default {
   mounted() {
     drawTools.getDom(this.$refs.canvas);
     let c = this.$refs.canvas;
-    let self = this;
     c.addEventListener(
       "click",
-      function (e) {
+      (e)=>{
         if (e.target.className == "img-item") return; //图片层则不绘画||防误触
 
-        switch (self.layer) {
+        switch (this.layer) {
           case 0:
             return;
           case 1: {
-            let target = self.curTarget;
-            let p = self.curData; //当前帧目标数据
+            let target = this.curTarget;
+            let p = this.curData; //当前帧目标数据
             p.cache = []; //下笔时清空点缓存区数据
             //绘画函数
             if (p.finish == true) return; //如果完成了则直接结束
@@ -192,22 +192,27 @@ export default {
             } else if (Math.abs(originX - x) < 6 && Math.abs(originY - y) < 6) {
               //如果点到起始点，则闭合图形
               command = "close";
-              sayManger.saySuccess.call(self);
+              sayManger.saySuccess.call(this);
               p.finish = true;
+              p.data.pop();
+              p.data.push(originX+','+originY)
             }
-            self.draw(command); //开始绘制
+            this.draw(command); //开始绘制
             break;
           }
           case 2: {
             let x = e.offsetX;
             let y = e.offsetY;
 
-            let track = JSON.parse(JSON.stringify(self.curTrack))
+            let track = JSON.parse(JSON.stringify(this.curTrack))
               .filter((item) => item.finish == true && item.data.length != 0) //清除异常点
               .map((item) => item.data);
             let result=drawTools.isInside(track,x,y);
-            console.log(result);
-
+            this.setColor({
+              index:result,
+              color:this.color
+            })
+            this.draw();
             break;
           }
         }
