@@ -40,7 +40,8 @@ function mergeData(vx, vy,basicTime) {
         });
         return {
           data: item.data,
-          time: new Date(item.time)
+          color:item.color,
+          time: new Date(item.time),
         };
       });
 
@@ -74,13 +75,14 @@ function CreateImportCode(viewX, viewY) {
     @keyframes move-${index} {
 `;
     for (const item of track) {
+      let color=item.color||'rgba(0,0,0,1)'
       let time = item.time.valueOf();
       let maxTime = track[track.length - 1].time.valueOf()-basicTime[index]; //毫秒
       let data = item.data;
       let timeRatio = ( (time-basicTime[index]) /maxTime) * 100;
       if (Number.isNaN(timeRatio)) timeRatio = 0;
       let frame = `          ${timeRatio}%{
-          background: black;
+          background: ${color};
           clip-path: polygon(${data})
          }
        `;

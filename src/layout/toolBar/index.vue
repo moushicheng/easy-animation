@@ -221,12 +221,12 @@ export default {
     preview() {
       this.$emit("events", "preview");
     },
-    choiceColor(){
+    choiceColor(){ //当color改变时触发
       this.colors.push(this.color);
     },
     changeColor(e){
       if(!e.target.style.color)return;
-       this.color=e.target.style.color
+      this.color=e.target.style.color
     }
   },
   model: {
@@ -237,6 +237,9 @@ export default {
     resolution: Array,
   },
   watch: {
+    color:function(){
+      this.$emit('events','_changeColor',this.color)
+    }
   },
 };
 </script>
